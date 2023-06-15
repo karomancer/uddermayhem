@@ -56,3 +56,6 @@ TagManager:
   - name: Cow
     uniqueID: 2455157219
     locked: 0
+  - name: UI
+    uniqueID: 1234560737
+    locked: 0

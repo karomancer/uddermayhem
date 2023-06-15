@@ -3,6 +3,19 @@ const int FrontRightTeat = A2;
 const int BackLeftTeat = A1;
 const int BackRightTeat = A0;
 
+
+// The larger the number, the more sensitive it is
+const int FRONT_LEFT_RELEASE_THRESHOLD = 48;
+const int FRONT_RIGHT_RELEASE_THRESHOLD = 250;
+const int BACK_LEFT_RELEASE_THRESHOLD = 30;
+const int BACK_RIGHT_RELEASE_THRESHOLD = 28;
+
+// The larger the number, the harder you have to squeeze
+const int FRONT_LEFT_PRESS_THRESHOLD = 995;
+const int FRONT_RIGHT_PRESS_THRESHOLD = 1000;
+const int BACK_LEFT_PRESS_THRESHOLD = 1010;
+const int BACK_RIGHT_PRESS_THRESHOLD = 1013;
+
 bool isFrontLeftSqueezed = false;
 bool isFrontRightSqueezed = false;
 bool isBackLeftSqueezed = false;
@@ -19,11 +32,11 @@ void setup() {
 void checkForFrontLeft() {
   int frontLeftValue = analogRead(FrontLeftTeat);
     // Serial.println(frontLeftValue);
-  if (frontLeftValue > 995 && !isFrontLeftSqueezed) {
+  if (frontLeftValue > FRONT_LEFT_PRESS_THRESHOLD && !isFrontLeftSqueezed) {
     Serial.println("Front Left Teat pressed!");
     Keyboard.press(KEY_A);
     isFrontLeftSqueezed = true;
-  } else if (isFrontLeftSqueezed && frontLeftValue < 400) {
+  } else if (isFrontLeftSqueezed && frontLeftValue < FRONT_LEFT_RELEASE_THRESHOLD) {
     Serial.println("Front left teat released!");
     Keyboard.release(KEY_A);
     isFrontLeftSqueezed = false;
@@ -32,11 +45,11 @@ void checkForFrontLeft() {
 
 void checkForFrontRight() {
   int frontRightValue = analogRead(FrontRightTeat);
-  if (frontRightValue > 1025 && !isFrontRightSqueezed) {
+  if (frontRightValue > FRONT_RIGHT_PRESS_THRESHOLD && !isFrontRightSqueezed) {
     Serial.println("Front Right Teat pressed!");
     Keyboard.press(KEY_S);
     isFrontRightSqueezed = true;
-  } else if (isFrontRightSqueezed && frontRightValue < 400) {
+  } else if (isFrontRightSqueezed && frontRightValue < FRONT_RIGHT_RELEASE_THRESHOLD) {
     Serial.println("Front Right teat released!");
     Keyboard.release(KEY_S);
     isFrontRightSqueezed = false;
@@ -45,11 +58,11 @@ void checkForFrontRight() {
 
 void checkForBackLeft() {
   int backLeftValue = analogRead(BackLeftTeat);
-  if (backLeftValue > 1015 && !isBackLeftSqueezed) {
+  if (backLeftValue > BACK_LEFT_PRESS_THRESHOLD && !isBackLeftSqueezed) {
     Serial.println("Back Left Teat pressed!");
     Keyboard.press(KEY_Q);
     isBackLeftSqueezed = true;
-  } else if (isBackLeftSqueezed && backLeftValue < 400) {
+  } else if (isBackLeftSqueezed && backLeftValue < BACK_LEFT_RELEASE_THRESHOLD) {
     Serial.println("Back Left Teat released!");
     Keyboard.release(KEY_Q);
     isBackLeftSqueezed = false;
@@ -58,11 +71,11 @@ void checkForBackLeft() {
 
 void checkForBackRight() {
   int backRightValue = analogRead(BackRightTeat);
-  if (backRightValue > 1020 && !isBackRightSqueezed) {
+  if (backRightValue > BACK_RIGHT_PRESS_THRESHOLD && !isBackRightSqueezed) {
     Serial.println("Back Right Teat pressed!");
     Keyboard.press(KEY_W);
     isBackRightSqueezed = true;
-  } else if (isBackRightSqueezed && backRightValue < 400) {
+  } else if (isBackRightSqueezed && backRightValue < BACK_RIGHT_RELEASE_THRESHOLD) {
     Serial.println("Back Right teat released!");
     Keyboard.release(KEY_W);
     isBackRightSqueezed = false;

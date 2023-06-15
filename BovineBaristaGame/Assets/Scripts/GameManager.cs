@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum BeatTiming
 {
@@ -11,7 +12,7 @@ public enum BeatTiming
 
 public class GameManager : MonoBehaviour
 {
-  public float beatAllowance = 0.1f;
+  public float beatAllowance = 0.5f;
   public float songPositionInBeats = 0f;
 
   //How many seconds have passed since the song started
@@ -21,6 +22,8 @@ public class GameManager : MonoBehaviour
   public float firstBeatOffset = 0;
 
   private AudioSource music;
+  private AudioClip milkywaycafeClip;
+
   private float songPosition = 0f;
 
   private bool musicIsPlaying = false;
@@ -39,15 +42,12 @@ public class GameManager : MonoBehaviour
     music.Play();
     musicIsPlaying = true;
     dspSongTime = (float)AudioSettings.dspTime;
+
+    Invoke("songIsOver", music.clip.length);
   }
 
   void Update()
-  {
-    if (Input.GetKeyDown(KeyCode.Space))
-    {
-      pauseOrResume();
-    }
-
+  {    
     if (musicIsPlaying)
     {
       //determine how many seconds since the song started
@@ -58,6 +58,23 @@ public class GameManager : MonoBehaviour
 
       cupConductor.Conduct(songPositionInBeats);
     }
+
+    if (!music.isPlaying) {
+      if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A))
+      {
+        SceneManager.LoadScene("Title");
+      }
+    } 
+
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+      pauseOrResume();
+    }
+  }
+
+  void songIsOver() {
+    Debug.Log("SONG IS OVER");
+    musicIsPlaying = false;
   }
 
   void pauseOrResume()
