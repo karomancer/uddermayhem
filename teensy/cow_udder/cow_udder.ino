@@ -5,16 +5,16 @@ const int BackRightTeat = A0;
 
 
 // The larger the number, the more sensitive it is
-const int FRONT_LEFT_RELEASE_THRESHOLD = 48;
-const int FRONT_RIGHT_RELEASE_THRESHOLD = 250;
-const int BACK_LEFT_RELEASE_THRESHOLD = 30;
-const int BACK_RIGHT_RELEASE_THRESHOLD = 28;
+const int FRONT_LEFT_RELEASE_THRESHOLD = 25;
+const int FRONT_RIGHT_RELEASE_THRESHOLD = 20;
+const int BACK_LEFT_RELEASE_THRESHOLD = 24;
+const int BACK_RIGHT_RELEASE_THRESHOLD = 23;
 
 // The larger the number, the harder you have to squeeze
-const int FRONT_LEFT_PRESS_THRESHOLD = 995;
-const int FRONT_RIGHT_PRESS_THRESHOLD = 1000;
-const int BACK_LEFT_PRESS_THRESHOLD = 1010;
-const int BACK_RIGHT_PRESS_THRESHOLD = 1013;
+const int FRONT_LEFT_PRESS_THRESHOLD = 1005;
+const int FRONT_RIGHT_PRESS_THRESHOLD = 1015;
+const int BACK_LEFT_PRESS_THRESHOLD = 1018;
+const int BACK_RIGHT_PRESS_THRESHOLD = 1020;
 
 bool isFrontLeftSqueezed = false;
 bool isFrontRightSqueezed = false;

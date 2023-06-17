@@ -191,11 +191,7 @@ public class CupConductor : MonoBehaviour
         nextCup.duration,
         0.558664f
       );
-
-      // Instantiate(cup, new Vector3(i, j), Quaternion.identity);
     }
-
-
 
     // Just for debug purposes
     // Debug.Log("Measure: " + measure + " Beat: " + (beatInMeasure + 1));

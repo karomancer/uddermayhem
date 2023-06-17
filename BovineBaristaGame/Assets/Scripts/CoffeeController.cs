@@ -47,7 +47,7 @@ public class CoffeeController : MonoBehaviour
 
   void Start()
   {
-    gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+    gameManager = GameObject.Find("GameManager").GetComponent<GameManager>() || GameObject.Find("TutorialManager").GetComponent<TutorialManager>();
     renderer = GetComponent<SpriteRenderer>();
     defaultCup = renderer.sprite;
 
