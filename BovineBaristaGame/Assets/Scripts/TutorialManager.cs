@@ -15,22 +15,8 @@ public class TutorialManager : MonoBehaviour
     public string[] cowPopups;
     private int cowPopupIndex = 0;
 
-    public string[] squeezePopups;
-    private int squeezePopupIndex = 0;
-    private bool[] hasSqueezedTeats = {false, false, false, false};
-
     public string[] rhythmPopups;
     private int rhythmPopupIndex = 0;
-
-    private float dspSongTime;
-    private int numHits = 0;
-    private TutorialCupConductor cupConductor;
-    public int NEEDED_HITS_TO_CONTINUE = 8;
-    public float beatAllowance = 0.5f;
-    public float songPositionInBeats = 0f;
-    //The offset to the first beat of the song in seconds
-    public float firstBeatOffset = 0;
-    private float songPosition = 0f;
 
     public GameObject cow;
     public GameObject[] teats; // backleft, backright, frontleft, frontright
@@ -58,12 +44,14 @@ public class TutorialManager : MonoBehaviour
 
     private float shutUpTime = 1.5f;
 
+    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
         metronome = GetComponent<AudioSource>();
-        baristaAnimator = barista.GetComponent<Animator>();  
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        baristaAnimator = barista.GetComponent<Animator>(); 
 
         speechBubbleSound = speechBubble.GetComponent<AudioSource>();
         speechBubbleSoundLength = speechBubbleSound.clip.length;
@@ -76,13 +64,10 @@ public class TutorialManager : MonoBehaviour
         rightHand.SetActive(false);
         leftHand.SetActive(false);
 
-        dspSongTime = (float)AudioSettings.dspTime;
-        cupConductor = GetComponent<TutorialCupConductor>();
-        
         introPopupIndex = 0;
 
         Invoke("Blink", 0.5f);        
-        Invoke("Talk", 2f);
+        Invoke("Talk", 1f);
 
         teats[0].GetComponent<AudioSource>().Play();
         speechBubbleSound.Stop();
@@ -94,35 +79,8 @@ public class TutorialManager : MonoBehaviour
         switch(step) {
             case 0:
                 if (introPopupIndex == introPopups.Length && !cowIsInView) {
-                    EnterCow();
+                    Invoke("EnterCow", 1f);
                 }
-                break;
-            case 1: 
-                break;
-            case 2:
-                if (cowPopupIndex == cowPopups.Length) {
-                }
-                break;
-            case 3: 
-                if (squeezePopupIndex >= squeezePopups.Length && (!hasSqueezedTeats[0] || !hasSqueezedTeats[1] || !hasSqueezedTeats[2] || !hasSqueezedTeats[3]) ) {
-                    WaitForSqueezes();
-                }
-
-                if (hasSqueezedTeats[0] && hasSqueezedTeats[1] && hasSqueezedTeats[2] && hasSqueezedTeats[3]) {
-                    Moo();
-                    IncreaseStep();
-                }
-                break;
-            case 4:
-                break;
-            case 5:
-            if (numHits == NEEDED_HITS_TO_CONTINUE) {
-                IncreaseStep();
-            } else {
-                songPosition = (float)(AudioSettings.dspTime - dspSongTime - firstBeatOffset);
-                songPositionInBeats = songPosition / CupConductor.SecPerBeat;
-                cupConductor.Conduct(songPositionInBeats);
-            }
                 break;
             default:
                 break;
@@ -158,40 +116,27 @@ public class TutorialManager : MonoBehaviour
 
                 if (popUpIndex == popUps.Length) {
                     Invoke("EnterRightHand", shutUpTime);                    
-                    Invoke("IncreaseStep", shutUpTime + 4f);
+                    Invoke("EnterLeftHand", shutUpTime + 0.5f);                    
+                    Invoke("MoveLeftHand", shutUpTime + 2.5f);
+                    Invoke("MoveLeftHand", shutUpTime + 4.5f);
+
+                    Invoke("MoveRightHand", shutUpTime + 3.5f);
+                    Invoke("MoveRightHand", shutUpTime + 5.2f);
+
+                    Invoke("ExitHands", shutUpTime + 8f);
+                    Invoke("IncreaseStep", shutUpTime + 6f);
                 }
                 break;
             case 2: 
                 popUps = cowPopups;
                 popUpIndex = cowPopupIndex++;
-
                 if (popUpIndex == popUps.Length) {
-                    RightHandStartSqueezing();
-                    Invoke("EnterLeftHand", shutUpTime);                    
-                    Invoke("MoveLeftHand", shutUpTime + 2.5f);
-                    Invoke("MoveLeftHand", shutUpTime + 4.5f);
-
-                    Invoke("EnterRightHand", shutUpTime + 3f);
-                    Invoke("MoveRightHand", shutUpTime + 3.5f);
-                    Invoke("MoveRightHand", shutUpTime + 5.2f);
-
-                    Invoke("ExitHands", shutUpTime + 8f);
-                    Invoke("IncreaseStep", shutUpTime + 8f);
+                    gameManager.StartSong();
                 }
                 break;
-            case 3:
-                popUps = squeezePopups;
-                popUpIndex = squeezePopupIndex++;
-                
-                break;
-            case 4:
+            case 3: 
                 popUps = rhythmPopups;
-                popUpIndex = rhythmPopupIndex++;
-
-                if (popUpIndex == popUps.Length) {
-                    metronome.Play();
-                }
-                
+                popUpIndex = rhythmPopupIndex;
                 break;
             default: 
                 return;
@@ -325,53 +270,5 @@ public class TutorialManager : MonoBehaviour
 
     void Moo() {
         cow.GetComponent<AudioSource>().Play();
-    }
-
-    void WaitForSqueezes() {
-        if (Input.GetKeyDown(KeyCode.Q)) {
-            hasSqueezedTeats[0] = true;
-            teats[0].GetComponent<AudioSource>().Play();
-        }
-
-        if (Input.GetKeyDown(KeyCode.W)) {
-            hasSqueezedTeats[1] = true;
-            teats[1].GetComponent<AudioSource>().Play();
-        }
-
-        if (Input.GetKeyDown(KeyCode.S)) {
-            hasSqueezedTeats[2] = true;
-            teats[2].GetComponent<AudioSource>().Play();
-        }
-
-        if (Input.GetKeyDown(KeyCode.A)) {
-            hasSqueezedTeats[3] = true;
-            teats[3].GetComponent<AudioSource>().Play();
-        }
-    }
-
-    /**
-    * This is seriously getting out of hand.
-    * beat stuff
-    **/
-    public BeatTiming IsOnBeat(int measure, float beat)
-    {
-        float expectedSongPosition = (measure * 4) + beat - 1;
-        bool isAcceptablyEarly = songPositionInBeats > (expectedSongPosition - beatAllowance);
-        bool isAcceptablyLate = songPositionInBeats < (expectedSongPosition + beatAllowance);
-        Debug.Log("Expected " + expectedSongPosition + " Got: " + songPositionInBeats);
-        if (isAcceptablyEarly && isAcceptablyLate)
-        {
-        Debug.Log("Nice!");
-        return BeatTiming.OnTime;
-        }
-
-        if (!isAcceptablyLate)
-        {
-        Debug.Log("Too Late");
-        return BeatTiming.TooLate;
-        }
-
-        Debug.Log("Too early");
-        return BeatTiming.TooEarly;
-    }
+    }    
 }
