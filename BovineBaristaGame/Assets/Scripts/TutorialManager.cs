@@ -79,8 +79,10 @@ public class TutorialManager : MonoBehaviour
         switch(step) {
             case 0:
                 if (introPopupIndex == introPopups.Length && !cowIsInView) {
-                    Invoke("EnterCow", 1f);
+                    EnterCow();
                 }
+                break;
+            case 1: 
                 break;
             default:
                 break;
@@ -90,7 +92,16 @@ public class TutorialManager : MonoBehaviour
     void IncreaseStep() {
         Debug.Log("Increase step");
         step++;
-        Invoke("Talk", 1f);
+        Talk();
+    }
+
+    void StartSong() {
+        gameManager.StartSong((float)AudioSettings.dspTime);
+    }
+
+    void HideBarista() {
+        barista.SetActive(false);
+        gameManager.ShowScore();
     }
 
     /**
@@ -105,10 +116,6 @@ public class TutorialManager : MonoBehaviour
             case 0:
                 popUps = introPopups;
                 popUpIndex = introPopupIndex++;
-
-                if (popUpIndex == popUps.Length) {
-                    Invoke("IncreaseStep", shutUpTime);
-                }
                 break;
             case 1:
                 popUps = handPopups;
@@ -125,19 +132,22 @@ public class TutorialManager : MonoBehaviour
 
                     Invoke("ExitHands", shutUpTime + 8f);
                     Invoke("IncreaseStep", shutUpTime + 6f);
-                }
+
+                    Invoke("StartSong", shutUpTime + 6f);
+                }   
                 break;
             case 2: 
                 popUps = cowPopups;
                 popUpIndex = cowPopupIndex++;
                 if (popUpIndex == popUps.Length) {
-                    gameManager.StartSong();
+                    Invoke("HideBarista", shutUpTime);                    
                 }
                 break;
-            case 3: 
-                popUps = rhythmPopups;
-                popUpIndex = rhythmPopupIndex;
-                break;
+            // case 3: 
+            //     popUps = rhythmPopups;
+            //     popUpIndex = rhythmPopupIndex;
+            
+            //     break;
             default: 
                 return;
         }
@@ -245,7 +255,7 @@ public class TutorialManager : MonoBehaviour
 
     void RightHandStopSqueezing() {
         rightHandAnimator.SetBool("isSqueezingTeat", false);
-    }
+    } 
 
     void LeftHandStartSqueezing() {
         leftHandAnimator.SetBool("isSqueezingTeat", true);
@@ -259,12 +269,12 @@ public class TutorialManager : MonoBehaviour
      * Cow methods
      **/
     void EnterCow() {
-        float speed = (cow.transform.position.y - cowEndingPositionY) * 15;
-        if (speed < 0) {
+        if (cow.transform.position.y <= cowEndingPositionY && !cowIsInView) {
             cowIsInView = true;
-            IncreaseStep();
+            Moo();
+            Invoke("IncreaseStep", shutUpTime *2);
         } else {
-            cow.transform.Translate(Vector2.down * 2 * Time.deltaTime);
+            cow.transform.Translate(Vector2.down * 5 * Time.deltaTime);
         }
     }
 

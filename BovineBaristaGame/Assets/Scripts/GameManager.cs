@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public enum BeatTiming
 {
@@ -16,6 +17,7 @@ public class GameManager : MonoBehaviour
   public float songPositionInBeats = 0f;
 
   //How many seconds have passed since the song started
+  public float dspSongTime;
 
   //The offset to the first beat of the song in seconds
   public float firstBeatOffset = 0;
@@ -27,8 +29,12 @@ public class GameManager : MonoBehaviour
 
   private bool musicIsPlaying = false;
 
+  private bool shouldShowScore = false;
+
   private CupConductor cupConductor;
 
+  public TMP_Text ScoreText;
+  private int currentScore = 0;
   private int OnTimeScore = 0;
   private int TooEarlyScore = 0;
   private int TooLateScore = 0;
@@ -40,7 +46,8 @@ public class GameManager : MonoBehaviour
   {
     music = GetComponent<AudioSource>();
     cupConductor = GetComponent<CupConductor>();
-
+    dspSongTime = (float)AudioSettings.dspTime;
+    ScoreText.text = "";
   }
 
   void Update()
@@ -48,11 +55,17 @@ public class GameManager : MonoBehaviour
     if (musicIsPlaying)
     {
       //determine how many seconds since the song started
-      songPosition = (float)(AudioSettings.dspTime - firstBeatOffset);
-      Debug.Log(songPosition);
+      songPosition = (float)(AudioSettings.dspTime - dspSongTime - firstBeatOffset);
 
       //determine how many beats since the song started
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
+      Debug.Log(songPositionInBeats);
+
+      if (shouldShowScore) {
+        double tips = currentScore / 100;
+        Debug.Log(tips);
+        ScoreText.text = "Tip jar: $" + tips;
+      }
 
       cupConductor.Conduct(songPositionInBeats);
     }
@@ -67,9 +80,14 @@ public class GameManager : MonoBehaviour
       pauseOrResume();
     }
   }
+
+  public void ShowScore() {
+    shouldShowScore = true;
+  }
   
-  public void StartSong() {
-    music.Play();
+  public void StartSong(float startTime) {
+    music.Play();    
+    dspSongTime = startTime;
     keysAreDisabled = false;
     musicIsPlaying = true;
     Invoke("songIsOver", music.clip.length);
@@ -92,6 +110,7 @@ public class GameManager : MonoBehaviour
     {
       music.Play();
       musicIsPlaying = true;
+      dspSongTime = (float)AudioSettings.dspTime;
     }
   }
 
@@ -101,12 +120,15 @@ public class GameManager : MonoBehaviour
     {
       case BeatTiming.OnTime:
         OnTimeScore++;
+        currentScore += 125;
         break;
       case BeatTiming.TooEarly:
         TooEarlyScore++;
+        currentScore += 25;
         break;
       case BeatTiming.TooLate:
         TooLateScore++;
+        currentScore += 50;
         break;
       default:
         break;
@@ -119,7 +141,7 @@ public class GameManager : MonoBehaviour
 
   public BeatTiming IsOnBeat()
   {
-    float currentPosition = (float)(AudioSettings.dspTime - firstBeatOffset);
+    float currentPosition = (float)(AudioSettings.dspTime - dspSongTime - firstBeatOffset);
     float hit = currentPosition % CupConductor.SecPerBeat;
     float nearestBeat = Mathf.Round(currentPosition % CupConductor.SecPerBeat);
 

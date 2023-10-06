@@ -66,7 +66,6 @@ public class CoffeeController : MonoBehaviour
     {
       // CupConductor.SecPerBeat;
       float speed = (endX - transform.position.x) * 5;
-      Debug.Log("speed: " + speed);
       transform.Translate(Vector2.right * speed * Time.deltaTime);
     }
   }
