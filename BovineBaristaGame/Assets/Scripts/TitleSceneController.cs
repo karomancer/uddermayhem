@@ -7,6 +7,7 @@ using TMPro;
 public class TitleSceneController : MonoBehaviour
 {
   public GameObject cloudPrefab;
+  public GameObject sunRays;
   // public TMP_Text highScoreText;
   // private int highScore;
 

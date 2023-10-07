@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
   private CupConductor cupConductor;
 
   public TMP_Text ScoreText;
-  private int currentScore = 0;
+  private float currentScore = 0;
   private int OnTimeScore = 0;
   private int TooEarlyScore = 0;
   private int TooLateScore = 0;
@@ -63,7 +63,6 @@ public class GameManager : MonoBehaviour
 
       if (shouldShowScore) {
         double tips = currentScore / 100;
-        Debug.Log(tips);
         ScoreText.text = "Tip jar: $" + tips;
       }
 
@@ -120,15 +119,15 @@ public class GameManager : MonoBehaviour
     {
       case BeatTiming.OnTime:
         OnTimeScore++;
-        currentScore += 125;
+        currentScore += 24;
         break;
       case BeatTiming.TooEarly:
         TooEarlyScore++;
-        currentScore += 25;
+        currentScore += 10;
         break;
       case BeatTiming.TooLate:
         TooLateScore++;
-        currentScore += 50;
+        currentScore += 12;
         break;
       default:
         break;
