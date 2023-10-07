@@ -59,3 +59,9 @@ TagManager:
   - name: UI
     uniqueID: 1234560737
     locked: 0
+  - name: Sun
+    uniqueID: 1003547657
+    locked: 0
+  - name: Grass
+    uniqueID: 610651033
+    locked: 0
