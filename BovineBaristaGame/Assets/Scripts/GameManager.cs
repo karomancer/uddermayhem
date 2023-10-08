@@ -23,7 +23,6 @@ public class GameManager : MonoBehaviour
   public float firstBeatOffset = 0;
 
   private AudioSource music;
-  private AudioClip milkywaycafeClip;
 
   private float songPosition = 0f;
 
