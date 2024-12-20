@@ -492,7 +492,7 @@ MonoBehaviour:
   sunPrefab: {fileID: 706642006753458403, guid: ff0171dbe9fb54715a46dca6b25f3227, type: 3}
   sunraysPrefab: {fileID: 5927832819781866755, guid: 588551935975b4aafb825a8707200e0f, type: 3}
   logoPrefab: {fileID: 6603092813084861626, guid: 6212ec4e7e7f341b694f3d1d81cf3c1f, type: 3}
-  songPositionInBeats: 0
+  themeSongBpm: 100
 --- !u!82 &934940304
 AudioSource:
   m_ObjectHideFlags: 0
@@ -503,7 +503,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 964f78445a33f4ad9be7fbe9ce47dcec, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 813bef13b5905414ba7a5ea188e26ff8, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
