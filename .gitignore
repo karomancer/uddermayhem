@@ -2,6 +2,7 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/master/Unity.gitignore
 #
+**/.DS_Store
 /BovineBaristaGame/[Ll]ibrary/
 /BovineBaristaGame/[Tt]emp/
 /BovineBaristaGame/[Oo]bj/
