@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public enum BeatTiming
 {
@@ -22,28 +23,30 @@ public class GameManager : MonoBehaviour
   public float firstBeatOffset = 0;
 
   private AudioSource music;
-  private AudioClip milkywaycafeClip;
 
   private float songPosition = 0f;
 
   private bool musicIsPlaying = false;
 
+  private bool shouldShowScore = false;
+
   private CupConductor cupConductor;
 
+  public TMP_Text ScoreText;
+  private float currentScore = 0;
   private int OnTimeScore = 0;
   private int TooEarlyScore = 0;
   private int TooLateScore = 0;
+
+  private bool keysAreDisabled = true;
+  private bool goingToTitleScreen = false;
 
   void Start()
   {
     music = GetComponent<AudioSource>();
     cupConductor = GetComponent<CupConductor>();
-
-    music.Play();
-    musicIsPlaying = true;
     dspSongTime = (float)AudioSettings.dspTime;
-
-    Invoke("songIsOver", music.clip.length);
+    ScoreText.text = "";
   }
 
   void Update()
@@ -55,21 +58,37 @@ public class GameManager : MonoBehaviour
 
       //determine how many beats since the song started
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
+      Debug.Log(songPositionInBeats);
+
+      if (shouldShowScore) {
+        double tips = currentScore / 100;
+        ScoreText.text = "Tip jar: $" + tips;
+      }
 
       cupConductor.Conduct(songPositionInBeats);
     }
 
-    if (!music.isPlaying) {
-      if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A))
-      {
-        SceneManager.LoadScene("Title");
-      }
+    if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen) {
+      Invoke("GotToTitleScene", 1f);
+      goingToTitleScreen = true;
     } 
 
     if (Input.GetKeyDown(KeyCode.Space))
     {
       pauseOrResume();
     }
+  }
+
+  public void ShowScore() {
+    shouldShowScore = true;
+  }
+  
+  public void StartSong(float startTime) {
+    music.Play();    
+    dspSongTime = startTime;
+    keysAreDisabled = false;
+    musicIsPlaying = true;
+    Invoke("songIsOver", music.clip.length);
   }
 
   void songIsOver() {
@@ -99,16 +118,23 @@ public class GameManager : MonoBehaviour
     {
       case BeatTiming.OnTime:
         OnTimeScore++;
+        currentScore += 24;
         break;
       case BeatTiming.TooEarly:
         TooEarlyScore++;
+        currentScore += 10;
         break;
       case BeatTiming.TooLate:
         TooLateScore++;
+        currentScore += 12;
         break;
       default:
         break;
     }
+  }
+
+  void GotToTitleScene() {
+    SceneManager.LoadScene("Title");
   }
 
   public BeatTiming IsOnBeat()
