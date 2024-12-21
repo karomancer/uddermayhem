@@ -201,7 +201,7 @@ public class TitleSceneController : MonoBehaviour
       if (isLogoGrownYet)
       {
         int angle = (int)logoObject.transform.rotation.eulerAngles.z;
-        Debug.Log("Angle: " + angle + " Direction: " + rotateDirection);
+        // Debug.Log("Angle: " + angle + " Direction: " + rotateDirection);
         if ((rotateDirection == 1 && angle == 5) || (rotateDirection == -1 && angle == 355))
         {
           float sunNewScale = sun.raysObject.transform.localScale.x + 0.05f * rotateDirection;

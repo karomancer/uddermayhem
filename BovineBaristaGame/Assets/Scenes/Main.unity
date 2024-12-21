@@ -1247,8 +1247,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Score: 0'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
-  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1480,6 +1480,7 @@ MonoBehaviour:
   dspSongTime: 0
   firstBeatOffset: 0
   ScoreText: {fileID: 832096492}
+  autoPlayEnabled: 0
 --- !u!114 &969475426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1492,6 +1493,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d01a735caab5148f7bd3426571e198c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  autoTeatManager: {fileID: 0}
   cupPrefab: {fileID: 6958796372611257120, guid: e4f17c57430ff4cb9885fb043f98d09b, type: 3}
 --- !u!82 &969475427
 AudioSource:

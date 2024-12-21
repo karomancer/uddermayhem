@@ -10,7 +10,6 @@ public enum BeatTiming
   OnTime,
   TooLate
 }
-
 public class GameManager : MonoBehaviour
 {
   public float beatAllowance = 0.5f;
@@ -40,6 +39,7 @@ public class GameManager : MonoBehaviour
 
   private bool keysAreDisabled = true;
   private bool goingToTitleScreen = false;
+  public bool autoPlayEnabled = true;
 
   void Start()
   {
@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
 
       //determine how many beats since the song started
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
-      Debug.Log(songPositionInBeats);
+      // Debug.Log(songPositionInBeats);
 
       if (shouldShowScore) {
         double tips = currentScore / 100;

@@ -12,7 +12,9 @@ public static class CupTag
 
 public class CupConductor : MonoBehaviour
 {
+  public AutoTeatManager autoTeatManager;
   public GameObject cupPrefab;
+  
   public static int BPM = 110;
 
   public static float SecPerBeat = 60f / 110;
@@ -160,9 +162,12 @@ public class CupConductor : MonoBehaviour
 
   private int cupIndex = 0;
 
+  private GameManager gameManager;
+
   void Start()
   {
     edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
+    gameManager = FindObjectOfType<GameManager>();
   }
 
   public void Conduct(float songPositionInBeats)
@@ -191,6 +196,16 @@ public class CupConductor : MonoBehaviour
         nextCup.duration,
         0.558664f
       );
+
+      if (gameManager.autoPlayEnabled)
+      {
+        // Calculate how many seconds remain until the correct beat
+        float beatsUntilPress = totalBeatNumber - songPositionInBeats;
+        float timeUntilPress = beatsUntilPress * SecPerBeat;
+
+        // Schedule a perfect teat press at the right time
+        autoTeatManager.ScheduleTeatPress(nextCup.type, timeUntilPress, nextCup.duration);
+      }
     }
 
     // Just for debug purposes
