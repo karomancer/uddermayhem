@@ -168,13 +168,24 @@ public class CupConductor : MonoBehaviour
   {
     edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
     gameManager = FindObjectOfType<GameManager>();
+    if (autoTeatManager == null)
+    {
+      autoTeatManager = FindObjectOfType<AutoTeatManager>();
+      if (autoTeatManager == null)
+      {
+        Debug.LogError("AutoTeatManager is not assigned and could not be found in the scene.");
+      }
+    }
   }
 
   public void Conduct(float songPositionInBeats)
   {
+    if (cupIndex >= CUP_NOTES.Length)
+    {
+      return; // No more cups to process
+    }
     int measure = (int)Mathf.Floor(songPositionInBeats / 4);
     float beatInMeasure = (songPositionInBeats % 4) + 1;
-
 
     CupNote nextCup = CUP_NOTES[cupIndex];
     // Debug.Log("measure: " + measure + " beatInMeasure: " + beatInMeasure + ", nextcup: " + nextCup.measure + " " + nextCup.beat);
@@ -197,12 +208,11 @@ public class CupConductor : MonoBehaviour
         0.558664f
       );
 
+      float beatsUntilPress = totalBeatNumber - songPositionInBeats;
+      float timeUntilPress = beatsUntilPress * SecPerBeat;
+
       if (gameManager.autoPlayEnabled)
       {
-        // Calculate how many seconds remain until the correct beat
-        float beatsUntilPress = totalBeatNumber - songPositionInBeats;
-        float timeUntilPress = beatsUntilPress * SecPerBeat;
-
         // Schedule a perfect teat press at the right time
         autoTeatManager.ScheduleTeatPress(nextCup.type, timeUntilPress, nextCup.duration);
       }

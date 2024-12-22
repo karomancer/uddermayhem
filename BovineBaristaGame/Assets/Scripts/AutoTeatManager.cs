@@ -8,6 +8,7 @@ public class AutoTeatManager : MonoBehaviour
   public TeatController[] teats; // Assign in inspector
   public float perfectAdvanceTime = 0.1f; // How early to press before the perfect beat
   private Dictionary<string, TeatController> teatMap;
+  private AudioSource bellAudioSource;
 
   void Start()
   {
@@ -17,6 +18,7 @@ public class AutoTeatManager : MonoBehaviour
       string teatType = teat.gameObject.name.Split("_")[1];
       teatMap[teatType] = teat;
     }
+    bellAudioSource = GetComponent<AudioSource>();
   }
 
   // Example: call this method when setting up each note in CupConductor
@@ -36,7 +38,16 @@ public class AutoTeatManager : MonoBehaviour
   {
     yield return new WaitForSeconds(offset);
     teat.SetSqueezing(true);
+    PlayBellSound();
     yield return new WaitForSeconds(squeezeDuration);
     teat.SetSqueezing(false);
+  }
+
+  private void PlayBellSound()
+  {
+    if (bellAudioSource != null)
+    {
+      bellAudioSource.Play();
+    }
   }
 }

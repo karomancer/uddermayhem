@@ -12,7 +12,7 @@ public enum BeatTiming
 }
 public class GameManager : MonoBehaviour
 {
-  public float beatAllowance = 0.5f;
+  public float beatAllowance = 0.25f;
   public float songPositionInBeats = 0f;
 
   //How many seconds have passed since the song started
@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour
 
       if (shouldShowScore) {
         double tips = currentScore / 100;
-        ScoreText.text = "Tip jar: $" + tips;
+        ScoreText.text = $"Tip jar: ${tips:F2}\nOn Time: {OnTimeScore}\nToo Early: {TooEarlyScore}\nToo Late: {TooLateScore}";
       }
 
       cupConductor.Conduct(songPositionInBeats);

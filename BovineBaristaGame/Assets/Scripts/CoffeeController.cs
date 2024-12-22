@@ -57,7 +57,7 @@ public class CoffeeController : MonoBehaviour
 
     endX = CupConductor.CupTagEndVector[cupTag].x;
 
-    Invoke("Serve", CupConductor.SecPerBeat + duration);
+    Invoke("Serve", CupConductor.SecPerBeat + duration * CupConductor.SecPerBeat + 1.0f * CupConductor.SecPerBeat);
   }
 
   void Update()
@@ -89,7 +89,7 @@ public class CoffeeController : MonoBehaviour
         }
         else
         {
-          Invoke("ChangeSpriteToTippedOver", animationDuration);
+          Invoke("ChangeSpriteToTippedOver", 1.0f * CupConductor.SecPerBeat);
           currentState = CupState.TippedOver;
         }
       }
