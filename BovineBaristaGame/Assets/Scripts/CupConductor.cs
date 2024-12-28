@@ -184,14 +184,12 @@ public class CupConductor : MonoBehaviour
     {
       return; // No more cups to process
     }
+
     int measure = (int)Mathf.Floor(songPositionInBeats / 4);
     float beatInMeasure = (songPositionInBeats % 4) + 1;
 
     CupNote nextCup = CUP_NOTES[cupIndex];
-    // Debug.Log("measure: " + measure + " beatInMeasure: " + beatInMeasure + ", nextcup: " + nextCup.measure + " " + nextCup.beat);
-
     float totalBeatNumber = (nextCup.measure * 4) + nextCup.beat - 1;
-    // Debug.Log("total beat: " + totalBeatNumber + " songPosition " + songPositionInBeats);
 
     if (totalBeatNumber <= songPositionInBeats + 1)
     {
@@ -211,16 +209,15 @@ public class CupConductor : MonoBehaviour
       float beatsUntilPress = totalBeatNumber - songPositionInBeats;
       float timeUntilPress = beatsUntilPress * SecPerBeat;
 
-      if (gameManager.autoPlayEnabled)
+      if (gameManager.autoPlayEnabled && autoTeatManager != null)
       {
-        // Schedule a perfect teat press at the right time
         autoTeatManager.ScheduleTeatPress(nextCup.type, timeUntilPress, nextCup.duration);
       }
+      else if (!gameManager.autoPlayEnabled)
+      {
+        Debug.Log("AutoPlay is disabled.");
+      }
     }
-
-    // Just for debug purposes
-    // Debug.Log("Measure: " + measure + " Beat: " + (beatInMeasure + 1));
-    // Debug.Log(songPositionInBeats);
   }
 }
 

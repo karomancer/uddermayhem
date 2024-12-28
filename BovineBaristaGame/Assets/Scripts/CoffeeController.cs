@@ -35,6 +35,9 @@ public class CoffeeController : MonoBehaviour
   private float scale;
 
   private float endX;
+  private bool initialOnTime = false;
+  private float squeezingStartTime = 0f;
+  private int collisionCount = 0;
 
   public void init(string _cupTag, int _measure, float _beatInMeasure, float _duration, float _scale)
   {
@@ -75,12 +78,17 @@ public class CoffeeController : MonoBehaviour
     if (other.gameObject.tag == "Teat")
     {
       string otherType = other.gameObject.name.Split("_")[1];
+      if (otherType != cupTag) return;
+
+      collisionCount++;
       float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
       if (otherType == cupTag)
       {
         BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure);
         if (timing == BeatTiming.OnTime)
         {
+          initialOnTime = true;
+          squeezingStartTime = Time.time;
           if (duration > 0.5f)
           {
             Invoke("ChangeSpriteToInProgress", animationDuration);
@@ -89,6 +97,7 @@ public class CoffeeController : MonoBehaviour
         }
         else
         {
+          initialOnTime = false;
           Invoke("ChangeSpriteToTippedOver", 1.0f * CupConductor.SecPerBeat);
           currentState = CupState.TippedOver;
         }
@@ -101,11 +110,24 @@ public class CoffeeController : MonoBehaviour
     if (other.gameObject.tag == "Teat")
     {
       string otherType = other.gameObject.name.Split("_")[1];
+      if (otherType != cupTag) return;
+
       float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
       if (otherType == cupTag && currentState != CupState.TippedOver)
       {
+        float squeezingDuration = Time.time - squeezingStartTime;
+        Debug.Log("Squeezing duration: " + squeezingDuration +
+                  " // Expected Duration: " + duration * CupConductor.SecPerBeat + 
+                  " // Delta: " + Mathf.Abs(duration * CupConductor.SecPerBeat - squeezingDuration) +
+                  " // Beat Allowance: " + (gameManager.beatAllowance) +
+                  " // Beat Allowance * 2: " + (gameManager.beatAllowance * 2) +
+                  " // Collision Count: " + collisionCount
+                  );
         BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure + duration);
-        if (timing == BeatTiming.OnTime)
+        if (initialOnTime 
+          && timing == BeatTiming.OnTime 
+          && Mathf.Abs(duration * CupConductor.SecPerBeat - squeezingDuration) <= gameManager.beatAllowance * 2
+        )
         {
           ChangeSpriteToLatteArt();
         }
