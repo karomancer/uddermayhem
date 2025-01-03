@@ -10,24 +10,6 @@ public class AutoTeatManager : MonoBehaviour
     private Dictionary<string, TeatController> teatMap;
     private AudioSource bellAudioSource;
 
-    private class ScheduledTeatPress
-    {
-        public TeatController teat;
-        public double pressTime;
-        public double releaseTime;
-        public bool isSqueezing; // Flag to track squeeze state
-
-        public ScheduledTeatPress(TeatController teat, double pressTime, double releaseTime)
-        {
-            this.teat = teat;
-            this.pressTime = pressTime;
-            this.releaseTime = releaseTime;
-            this.isSqueezing = false; // Initialize flag to false
-        }
-    }
-
-    private List<ScheduledTeatPress> scheduledTeatPresses = new List<ScheduledTeatPress>();
-
     void Start()
     {
         teatMap = new Dictionary<string, TeatController>();
@@ -41,29 +23,7 @@ public class AutoTeatManager : MonoBehaviour
 
     void Update()
     {
-        double currentTime = AudioSettings.dspTime;
-        for (int i = scheduledTeatPresses.Count - 1; i >= 0; i--)
-        {
-            ScheduledTeatPress press = scheduledTeatPresses[i];
-            if (currentTime >= press.pressTime && currentTime < press.releaseTime)
-            {
-                if (!press.isSqueezing)
-                {
-                    press.teat.SetSqueezing(true);
-                    PlayBellSound();
-                    press.isSqueezing = true; // Set flag to true
-                }
-            }
-            else if (currentTime >= press.releaseTime)
-            {
-                if (press.isSqueezing)
-                {
-                    press.teat.SetSqueezing(false);
-                    press.isSqueezing = false; // Reset flag
-                }
-                scheduledTeatPresses.RemoveAt(i);
-            }
-        }
+        // No need to manage scheduled presses here
     }
 
     // Example: call this method when setting up each note in CupConductor
@@ -73,7 +33,8 @@ public class AutoTeatManager : MonoBehaviour
         {
             double pressTime = AudioSettings.dspTime + timeUntilPress - perfectAdvanceTime;
             double releaseTime = pressTime + squeezeDuration;
-            scheduledTeatPresses.Add(new ScheduledTeatPress(teat, pressTime, releaseTime));
+            teat.SetSqueezing(pressTime, releaseTime);
+            Debug.Log($"Scheduled teat press for {teatType} at {pressTime} with release at {releaseTime}");
         }
         else
         {

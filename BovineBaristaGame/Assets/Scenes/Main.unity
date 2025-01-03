@@ -1497,7 +1497,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1bd677c519624ac6918671d81f6b123, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beatAllowance: 0.75
+  beatAllowance: 0.4
   songPositionInBeats: 0
   dspSongTime: 0
   firstBeatOffset: 0

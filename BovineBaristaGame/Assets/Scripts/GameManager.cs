@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
   }
 
   void Update()
-  {    
+  {
     if (musicIsPlaying)
     {
       //determine how many seconds since the song started
@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
     if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen) {
       Invoke("GotToTitleScene", 1f);
       goingToTitleScreen = true;
-    } 
+    }
 
     if (Input.GetKeyDown(KeyCode.Space))
     {
@@ -82,9 +82,9 @@ public class GameManager : MonoBehaviour
   public void ShowScore() {
     shouldShowScore = true;
   }
-  
+
   public void StartSong(float startTime) {
-    music.Play();    
+    music.Play();
     dspSongTime = startTime;
     keysAreDisabled = false;
     musicIsPlaying = true;
@@ -137,48 +137,46 @@ public class GameManager : MonoBehaviour
     SceneManager.LoadScene("Title");
   }
 
-  public BeatTiming IsOnBeat()
+  public BeatTiming Judge(float timeDelta)
   {
-    float currentPosition = (float)(AudioSettings.dspTime - dspSongTime - firstBeatOffset);
-    float hit = currentPosition % CupConductor.SecPerBeat;
-    float nearestBeat = Mathf.Round(currentPosition % CupConductor.SecPerBeat);
-
-    if (hit < beatAllowance)
+    if (Mathf.Abs(timeDelta) <= beatAllowance)
     {
-      Debug.Log("Hit!");
-      return BeatTiming.OnTime;
-    }
-
-    if (currentPosition > nearestBeat)
-    {
-      Debug.Log("Late!");
-      return BeatTiming.TooLate;
-    }
-
-    Debug.Log("Early!");
-    return BeatTiming.TooEarly;
-
-  }
-
-  public BeatTiming IsOnBeat(int measure, float beat)
-  {
-    float expectedSongPosition = (measure * 4) + beat - 1;
-    bool isAcceptablyEarly = songPositionInBeats > (expectedSongPosition - beatAllowance);
-    bool isAcceptablyLate = songPositionInBeats < (expectedSongPosition + beatAllowance);
-    // Debug.Log("Expected " + expectedSongPosition + " Got: " + songPositionInBeats);
-    if (isAcceptablyEarly && isAcceptablyLate)
-    {
+      // Debug.Log("On Time // Delta: " + timeDelta);
       SubmitCustomerFeedback(BeatTiming.OnTime);
       return BeatTiming.OnTime;
     }
 
-    if (!isAcceptablyLate)
+    if (timeDelta > beatAllowance)
     {
+      // Debug.Log("Too Late // Delta: " + timeDelta);
       SubmitCustomerFeedback(BeatTiming.TooLate);
       return BeatTiming.TooLate;
     }
 
+    // Debug.Log("Too Early // Delta: " + timeDelta);
     SubmitCustomerFeedback(BeatTiming.TooEarly);
     return BeatTiming.TooEarly;
   }
+
+  // public BeatTiming Judge(int measure, float beat, float timeDelta)
+  // {
+  //   float expectedSongPosition = (measure * 4) + beat - 1;
+  //   bool isAcceptablyEarly = songPositionInBeats > (expectedSongPosition - beatAllowance);
+  //   bool isAcceptablyLate = songPositionInBeats < (expectedSongPosition + beatAllowance);
+  //   // Debug.Log("Expected " + expectedSongPosition + " Got: " + songPositionInBeats);
+  //   if (isAcceptablyEarly && isAcceptablyLate)
+  //   {
+  //     SubmitCustomerFeedback(BeatTiming.OnTime);
+  //     return BeatTiming.OnTime;
+  //   }
+
+  //   if (!isAcceptablyLate)
+  //   {
+  //     SubmitCustomerFeedback(BeatTiming.TooLate);
+  //     return BeatTiming.TooLate;
+  //   }
+
+  //   SubmitCustomerFeedback(BeatTiming.TooEarly);
+  //   return BeatTiming.TooEarly;
+  // }
 }
