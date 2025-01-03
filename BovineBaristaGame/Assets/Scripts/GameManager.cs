@@ -10,10 +10,9 @@ public enum BeatTiming
   OnTime,
   TooLate
 }
-
 public class GameManager : MonoBehaviour
 {
-  public float beatAllowance = 0.5f;
+  public float beatAllowance = 0.33f;
   public float songPositionInBeats = 0f;
 
   //How many seconds have passed since the song started
@@ -40,6 +39,7 @@ public class GameManager : MonoBehaviour
 
   private bool keysAreDisabled = true;
   private bool goingToTitleScreen = false;
+  public bool autoPlayEnabled = false;
 
   void Start()
   {
@@ -58,11 +58,11 @@ public class GameManager : MonoBehaviour
 
       //determine how many beats since the song started
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
-      Debug.Log(songPositionInBeats);
+      // Debug.Log(songPositionInBeats);
 
       if (shouldShowScore) {
         double tips = currentScore / 100;
-        ScoreText.text = "Tip jar: $" + tips;
+        ScoreText.text = $"Tip jar: ${tips:F2}\nOn Time: {OnTimeScore}\nToo Early: {TooEarlyScore}\nToo Late: {TooLateScore}";
       }
 
       cupConductor.Conduct(songPositionInBeats);
@@ -165,7 +165,7 @@ public class GameManager : MonoBehaviour
     float expectedSongPosition = (measure * 4) + beat - 1;
     bool isAcceptablyEarly = songPositionInBeats > (expectedSongPosition - beatAllowance);
     bool isAcceptablyLate = songPositionInBeats < (expectedSongPosition + beatAllowance);
-    Debug.Log("Expected " + expectedSongPosition + " Got: " + songPositionInBeats);
+    // Debug.Log("Expected " + expectedSongPosition + " Got: " + songPositionInBeats);
     if (isAcceptablyEarly && isAcceptablyLate)
     {
       SubmitCustomerFeedback(BeatTiming.OnTime);

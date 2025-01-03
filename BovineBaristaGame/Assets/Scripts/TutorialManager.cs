@@ -16,7 +16,7 @@ public class TutorialManager : MonoBehaviour
     private int cowPopupIndex = 0;
 
     public string[] rhythmPopups;
-    private int rhythmPopupIndex = 0;
+    // private int rhythmPopupIndex = 0;
 
     public GameObject cow;
     public GameObject[] teats; // backleft, backright, frontleft, frontright

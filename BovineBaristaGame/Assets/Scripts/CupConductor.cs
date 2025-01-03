@@ -12,7 +12,9 @@ public static class CupTag
 
 public class CupConductor : MonoBehaviour
 {
+  public AutoTeatManager autoTeatManager;
   public GameObject cupPrefab;
+  
   public static int BPM = 110;
 
   public static float SecPerBeat = 60f / 110;
@@ -160,22 +162,34 @@ public class CupConductor : MonoBehaviour
 
   private int cupIndex = 0;
 
+  private GameManager gameManager;
+
   void Start()
   {
     edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
+    gameManager = FindObjectOfType<GameManager>();
+    if (autoTeatManager == null)
+    {
+      autoTeatManager = FindObjectOfType<AutoTeatManager>();
+      if (autoTeatManager == null)
+      {
+        Debug.LogError("AutoTeatManager is not assigned and could not be found in the scene.");
+      }
+    }
   }
 
   public void Conduct(float songPositionInBeats)
   {
+    if (cupIndex >= CUP_NOTES.Length)
+    {
+      return; // No more cups to process
+    }
+
     int measure = (int)Mathf.Floor(songPositionInBeats / 4);
     float beatInMeasure = (songPositionInBeats % 4) + 1;
 
-
     CupNote nextCup = CUP_NOTES[cupIndex];
-    // Debug.Log("measure: " + measure + " beatInMeasure: " + beatInMeasure + ", nextcup: " + nextCup.measure + " " + nextCup.beat);
-
     float totalBeatNumber = (nextCup.measure * 4) + nextCup.beat - 1;
-    // Debug.Log("total beat: " + totalBeatNumber + " songPosition " + songPositionInBeats);
 
     if (totalBeatNumber <= songPositionInBeats + 1)
     {
@@ -191,11 +205,19 @@ public class CupConductor : MonoBehaviour
         nextCup.duration,
         0.558664f
       );
-    }
 
-    // Just for debug purposes
-    // Debug.Log("Measure: " + measure + " Beat: " + (beatInMeasure + 1));
-    // Debug.Log(songPositionInBeats);
+      float beatsUntilPress = totalBeatNumber - songPositionInBeats;
+      float timeUntilPress = beatsUntilPress * SecPerBeat;
+
+      if (gameManager.autoPlayEnabled && autoTeatManager != null)
+      {
+        autoTeatManager.ScheduleTeatPress(nextCup.type, timeUntilPress, nextCup.duration);
+      }
+      else if (!gameManager.autoPlayEnabled)
+      {
+        Debug.Log("AutoPlay is disabled.");
+      }
+    }
   }
 }
 
