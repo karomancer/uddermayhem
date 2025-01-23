@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +14,7 @@ public enum BeatTiming
 }
 public class GameManager : MonoBehaviour
 {
+  private ScoreManager scoreManager;
   public float beatAllowance = 0.33f;
   public float songPositionInBeats = 0f;
 
@@ -32,55 +35,58 @@ public class GameManager : MonoBehaviour
   private CupConductor cupConductor;
 
   public TMP_Text ScoreText;
-  private float currentScore = 0;
-  private int OnTimeScore = 0;
-  private int TooEarlyScore = 0;
-  private int TooLateScore = 0;
 
   private bool keysAreDisabled = true;
   private bool goingToTitleScreen = false;
+  private bool enteringHighScore = false;
+  private bool viewingLeaderboard = false;
   public bool autoPlayEnabled = false;
 
   void Start()
   {
     music = GetComponent<AudioSource>();
     cupConductor = GetComponent<CupConductor>();
+    scoreManager = ScoreManager.Instance;
     dspSongTime = (float)AudioSettings.dspTime;
     ScoreText.text = "";
   }
 
   void Update()
   {
-    if (musicIsPlaying)
-    {
+    if (musicIsPlaying) {
       //determine how many seconds since the song started
       songPosition = (float)(AudioSettings.dspTime - dspSongTime - firstBeatOffset);
 
       //determine how many beats since the song started
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
-      // Debug.Log(songPositionInBeats);
 
       if (shouldShowScore) {
-        double tips = currentScore / 100;
-        ScoreText.text = $"Tip jar: ${tips:F2}\nOn Time: {OnTimeScore}\nToo Early: {TooEarlyScore}\nToo Late: {TooLateScore}";
-      }
+        int score = scoreManager.GetCurrentScore();
+        string tips = (score / 100m).ToString("C");
+        int onTimeScore = scoreManager.OnTimeCount;
+        int tooEarlyScore = scoreManager.TooEarlyCount;
+        int tooLateScore = scoreManager.TooLateCount;
+        ScoreText.text = $"Tip jar: {tips}\nOn Time: {onTimeScore}\nToo Early: {tooEarlyScore}\nToo Late: {tooLateScore}";
+    }
 
       cupConductor.Conduct(songPositionInBeats);
     }
 
-    if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen) {
+    if (enteringHighScore) {
+      if (Input.GetKeyDown(KeyCode.Return)) {
+        enteringHighScore = false;
+        // GoToLeaderboard();
+      }
+    }
+
+    if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen && !enteringHighScore && !viewingLeaderboard) {
       Invoke("GotToTitleScene", 1f);
       goingToTitleScreen = true;
     }
 
-    if (Input.GetKeyDown(KeyCode.Space))
-    {
+    if (Input.GetKeyDown(KeyCode.Space)) {
       pauseOrResume();
     }
-  }
-
-  public void ShowScore() {
-    shouldShowScore = true;
   }
 
   public void StartSong(float startTime) {
@@ -94,11 +100,11 @@ public class GameManager : MonoBehaviour
   void songIsOver() {
     Debug.Log("SONG IS OVER");
     musicIsPlaying = false;
+    CheckHighScore();
   }
 
   void pauseOrResume()
   {
-
     if (musicIsPlaying)
     {
       music.Pause();
@@ -112,71 +118,33 @@ public class GameManager : MonoBehaviour
     }
   }
 
-  public void SubmitCustomerFeedback(BeatTiming bt)
+
+  void GotToTitleScene() { SceneManager.LoadScene("Title"); }
+
+  void GoToNameEntry() { SceneManager.LoadScene("NameEntry"); }
+
+  public void ShowScore() { shouldShowScore = true; }
+
+  private void CheckHighScore()
   {
-    switch (bt)
-    {
-      case BeatTiming.OnTime:
-        OnTimeScore++;
-        currentScore += 24;
-        break;
-      case BeatTiming.TooEarly:
-        TooEarlyScore++;
-        currentScore += 10;
-        break;
-      case BeatTiming.TooLate:
-        TooLateScore++;
-        currentScore += 12;
-        break;
-      default:
-        break;
+    int currentScore = scoreManager.GetCurrentScore();
+    bool hasHighScore = scoreManager.IsHighScore(currentScore);
+    if (hasHighScore) {
+      enteringHighScore = true;
+      Invoke("GoToNameEntry", 0f);
+    } else {
+      goingToTitleScreen = true;
+      Invoke("GotToTitleScene", 1f);
     }
   }
 
-  void GotToTitleScene() {
-    SceneManager.LoadScene("Title");
-  }
-
-  public BeatTiming Judge(float timeDelta)
+  public void DisplayHighScores(TMP_Text highScoreText)
   {
-    if (Mathf.Abs(timeDelta) <= beatAllowance)
+    highScoreText.text = "Earningest Esteemed Employees:\n";
+    List<ScoreManager.ScoreData> highScores = scoreManager.GetHighScores();
+    for (int i = 0; i < highScores.Count; i++)
     {
-      // Debug.Log("On Time // Delta: " + timeDelta);
-      SubmitCustomerFeedback(BeatTiming.OnTime);
-      return BeatTiming.OnTime;
+      highScoreText.text += $"{i + 1}. {highScores[i].playerName}: {highScores[i].score}\n";
     }
-
-    if (timeDelta > beatAllowance)
-    {
-      // Debug.Log("Too Late // Delta: " + timeDelta);
-      SubmitCustomerFeedback(BeatTiming.TooLate);
-      return BeatTiming.TooLate;
-    }
-
-    // Debug.Log("Too Early // Delta: " + timeDelta);
-    SubmitCustomerFeedback(BeatTiming.TooEarly);
-    return BeatTiming.TooEarly;
   }
-
-  // public BeatTiming Judge(int measure, float beat, float timeDelta)
-  // {
-  //   float expectedSongPosition = (measure * 4) + beat - 1;
-  //   bool isAcceptablyEarly = songPositionInBeats > (expectedSongPosition - beatAllowance);
-  //   bool isAcceptablyLate = songPositionInBeats < (expectedSongPosition + beatAllowance);
-  //   // Debug.Log("Expected " + expectedSongPosition + " Got: " + songPositionInBeats);
-  //   if (isAcceptablyEarly && isAcceptablyLate)
-  //   {
-  //     SubmitCustomerFeedback(BeatTiming.OnTime);
-  //     return BeatTiming.OnTime;
-  //   }
-
-  //   if (!isAcceptablyLate)
-  //   {
-  //     SubmitCustomerFeedback(BeatTiming.TooLate);
-  //     return BeatTiming.TooLate;
-  //   }
-
-  //   SubmitCustomerFeedback(BeatTiming.TooEarly);
-  //   return BeatTiming.TooEarly;
-  // }
 }
