@@ -25,6 +25,7 @@ public class CoffeeController : MonoBehaviour
 
   private string cupTag;
 
+  private ScoreManager scoreManager;
   private GameManager gameManager;
 
   private new SpriteRenderer renderer;
@@ -56,6 +57,7 @@ public class CoffeeController : MonoBehaviour
 
   void Start()
   {
+    scoreManager = ScoreManager.Instance;
     gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     renderer = GetComponent<SpriteRenderer>();
     defaultCup = renderer.sprite;
@@ -89,9 +91,9 @@ public class CoffeeController : MonoBehaviour
       float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
       float currentTime = (float)(AudioSettings.dspTime - gameManager.dspSongTime);
       float timeDelta = currentTime - perfectPressTime;
-      gameManager.Judge(timeDelta);
+      scoreManager.Judge(timeDelta);
 
-      if (Mathf.Abs(currentTime - perfectPressTime) <= gameManager.beatAllowance)
+      if (Mathf.Abs(currentTime - perfectPressTime) <= scoreManager.beatAllowance)
       {
         initialOnTime = true;
         squeezingStartTime = Time.time;
@@ -123,24 +125,16 @@ public class CoffeeController : MonoBehaviour
         float squeezingDuration = Time.time - squeezingStartTime;
         float currentTime = (float)(AudioSettings.dspTime - gameManager.dspSongTime);
         float timeDelta = currentTime - perfectReleaseTime;
-        gameManager.Judge(timeDelta);
-
-        Debug.Log("Squeezing duration: " + squeezingDuration +
-                  " // Expected Duration: " + duration * CupConductor.SecPerBeat +
-                  " // Delta: " + timeDelta +
-                  " // Beat Allowance: " + (gameManager.beatAllowance) +
-                  " // Beat Allowance * 2: " + (gameManager.beatAllowance * 2) +
-                  " // Collision Count: " + collisionCount
-                  );
+        scoreManager.Judge(timeDelta);
 
         if (initialOnTime
-          && Mathf.Abs(currentTime - perfectReleaseTime) <= gameManager.beatAllowance
-          && Mathf.Abs(duration * CupConductor.SecPerBeat - squeezingDuration) <= gameManager.beatAllowance * 2
+          && Mathf.Abs(currentTime - perfectReleaseTime) <= scoreManager.beatAllowance
+          && Mathf.Abs(duration * CupConductor.SecPerBeat - squeezingDuration) <= scoreManager.beatAllowance * 2
         )
         {
           ChangeSpriteToLatteArt();
         }
-        else if (currentTime > perfectReleaseTime + gameManager.beatAllowance)
+        else if (currentTime > perfectReleaseTime + scoreManager.beatAllowance)
         {
           ChangeSpriteToOverFilled();
         }
