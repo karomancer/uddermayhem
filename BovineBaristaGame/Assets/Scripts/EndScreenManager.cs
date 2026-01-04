@@ -242,6 +242,12 @@ public class EndScreenManager : MonoBehaviour
             initialsEntryPanel.SetActive(true);
         }
 
+        // Hide the barista during initials entry
+        if (barista != null)
+        {
+            barista.SetVisible(false);
+        }
+
         if (initialsEntry != null)
         {
             initialsEntry.ResetToDefault();

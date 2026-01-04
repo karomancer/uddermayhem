@@ -3,10 +3,13 @@ using UnityEngine.SceneManagement;
 
 public class LevelSelectManager : MonoBehaviour
 {
+    [Header("Level Configs")]
+    public LevelConfig easyConfig;
+    public LevelConfig mediumConfig;
+    public LevelConfig hardConfig;
+
     [Header("Scene Names")]
-    public string easySceneName = "Easy";
-    public string mediumSceneName = "Main";
-    public string hardSceneName = "Hard";
+    public string levelSceneName = "Main";      // Single level scene for all difficulties
     public string titleSceneName = "Title";
 
     [Header("Transition")]
@@ -15,31 +18,38 @@ public class LevelSelectManager : MonoBehaviour
     // Called by Easy button OnClick
     public void SelectEasy()
     {
-        GameManager.currentDifficulty = "Easy";
-        LoadLevel(easySceneName);
+        LoadLevelWithConfig(easyConfig);
     }
 
     // Called by Medium button OnClick
     public void SelectMedium()
     {
-        GameManager.currentDifficulty = "Medium";
-        LoadLevel(mediumSceneName);
+        LoadLevelWithConfig(mediumConfig);
     }
 
     // Called by Hard button OnClick
     public void SelectHard()
     {
-        GameManager.currentDifficulty = "Hard";
-        LoadLevel(hardSceneName);
+        LoadLevelWithConfig(hardConfig);
     }
 
     // Called by Back button OnClick
     public void GoBack()
     {
-        LoadLevel(titleSceneName);
+        LoadScene(titleSceneName);
     }
 
-    private void LoadLevel(string sceneName)
+    private void LoadLevelWithConfig(LevelConfig config)
+    {
+        if (config != null)
+        {
+            GameManager.currentLevelConfig = config;
+            GameManager.currentDifficulty = config.difficultyName;
+        }
+        LoadScene(levelSceneName);
+    }
+
+    private void LoadScene(string sceneName)
     {
         if (transitionManager != null)
         {
@@ -47,7 +57,6 @@ public class LevelSelectManager : MonoBehaviour
         }
         else
         {
-            // Fallback: load immediately without transition
             SceneManager.LoadScene(sceneName);
         }
     }

@@ -19,6 +19,9 @@ public class GameManager : MonoBehaviour
   public static event Action<int> OnStreakChanged;
   public static event Action<int, int> OnScoreChanged; // (newScore, streakMultiplier)
 
+  // Level configuration - set by LevelSelectManager before loading scene
+  public static LevelConfig currentLevelConfig;
+
   // Difficulty and score for end screen
   public static string currentDifficulty = "Medium";
   private static int finalScore = 0;
@@ -69,6 +72,32 @@ public class GameManager : MonoBehaviour
     cupConductor = GetComponent<CupConductor>();
     dspSongTime = (float)AudioSettings.dspTime;
     ScoreText.text = "";
+
+    // Apply level config if set
+    ApplyLevelConfig();
+  }
+
+  private void ApplyLevelConfig()
+  {
+    if (currentLevelConfig != null)
+    {
+      // Set difficulty name
+      currentDifficulty = currentLevelConfig.difficultyName;
+
+      // Set song if specified
+      if (currentLevelConfig.song != null && music != null)
+      {
+        music.clip = currentLevelConfig.song;
+      }
+
+      // Set BPM on CupConductor
+      if (cupConductor != null)
+      {
+        CupConductor.BPM = (int)currentLevelConfig.bpm;
+      }
+
+      Debug.Log($"Applied level config: {currentLevelConfig.difficultyName}, BPM: {currentLevelConfig.bpm}");
+    }
   }
 
   void Update()

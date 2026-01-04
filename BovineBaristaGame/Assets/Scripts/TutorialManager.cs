@@ -52,6 +52,14 @@ public class TutorialManager : MonoBehaviour
     {
         metronome = GetComponent<AudioSource>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
+        // Check if tutorial should be skipped based on level config
+        if (!ShouldShowTutorial())
+        {
+            SkipTutorialImmediate();
+            return;
+        }
+
         baristaAnimator = barista.GetComponent<Animator>();
 
         speechBubbleSound = speechBubble.GetComponent<AudioSource>();
@@ -72,6 +80,48 @@ public class TutorialManager : MonoBehaviour
 
         teats[0].GetComponent<AudioSource>().Play();
         speechBubbleSound.Stop();
+    }
+
+    private bool ShouldShowTutorial()
+    {
+        // If no config is set, default to showing tutorial
+        if (GameManager.currentLevelConfig == null)
+        {
+            return true;
+        }
+        return GameManager.currentLevelConfig.showTutorial;
+    }
+
+    // Skip tutorial without any animation - for non-tutorial levels
+    private void SkipTutorialImmediate()
+    {
+        // Hide tutorial UI elements
+        if (speechBubble != null) speechBubble.SetActive(false);
+        if (rightHand != null) rightHand.SetActive(false);
+        if (leftHand != null) leftHand.SetActive(false);
+        if (skipButton != null) skipButton.SetActive(false);
+        if (barista != null) barista.SetActive(false);
+        if (message != null) message.text = "";
+
+        // Ensure all teats are active
+        for (int i = 0; i < teats.Length; i++)
+        {
+            if (teats[i] != null) teats[i].SetActive(true);
+        }
+
+        // Position cow in view
+        if (cow != null)
+        {
+            cow.transform.position = new Vector3(
+                cow.transform.position.x,
+                cowEndingPositionY,
+                cow.transform.position.z
+            );
+        }
+
+        // Start the game immediately
+        gameManager.ShowScore();
+        gameManager.StartSong((float)AudioSettings.dspTime);
     }
 
     // Update is called once per frame
