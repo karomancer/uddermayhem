@@ -36,6 +36,9 @@ public class CoffeeController : MonoBehaviour
 
   private float endX;
 
+  private bool wasHit = false; // Track if cup was interacted with
+  private bool hasBeenProcessed = false; // Prevent multiple collision processing
+
   public void init(string _cupTag, int _measure, float _beatInMeasure, float _duration, float _scale)
   {
     cupTag = _cupTag;
@@ -76,20 +79,37 @@ public class CoffeeController : MonoBehaviour
     {
       string otherType = other.gameObject.name.Split("_")[1];
       float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
-      if (otherType == cupTag)
+      if (otherType == cupTag && !hasBeenProcessed)
       {
-        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure);
+        hasBeenProcessed = true; // Prevent re-processing
+        wasHit = true; // Mark as interacted with
+
+        // Cancel any pending sprite changes
+        CancelInvoke("ChangeSpriteToInProgress");
+        CancelInvoke("ChangeSpriteToTippedOver");
+
+        TeatController teatController = other.gameObject.GetComponent<TeatController>();
+        float inputTime = teatController.songPositionAtPress;
+        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure, inputTime);
+
+        // Adjust delay to account for time elapsed since actual input
+        float timeSincePress = (gameManager.songPositionInBeats - inputTime) * CupConductor.SecPerBeat;
+        float adjustedDelay = Mathf.Max(0, animationDuration - timeSincePress);
+
         if (timing == BeatTiming.OnTime)
         {
+          // Immediate visual feedback - subtle scale bump
+          StartCoroutine(ScaleBump(1.08f, 0.15f));
+
           if (duration > 0.5f)
           {
-            Invoke("ChangeSpriteToInProgress", animationDuration);
+            Invoke("ChangeSpriteToInProgress", adjustedDelay);
             currentState = CupState.InProgress;
           }
         }
         else
         {
-          Invoke("ChangeSpriteToTippedOver", animationDuration);
+          Invoke("ChangeSpriteToTippedOver", adjustedDelay);
           currentState = CupState.TippedOver;
         }
       }
@@ -104,7 +124,9 @@ public class CoffeeController : MonoBehaviour
       float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
       if (otherType == cupTag && currentState != CupState.TippedOver)
       {
-        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure + duration);
+        TeatController teatController = other.gameObject.GetComponent<TeatController>();
+        float inputTime = teatController.songPositionAtRelease;
+        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime);
         if (timing == BeatTiming.OnTime)
         {
           ChangeSpriteToLatteArt();
@@ -126,6 +148,15 @@ public class CoffeeController : MonoBehaviour
     Vector2 edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(1, 0));
     endX = edgeVector.x + 10;
     Destroy(gameObject, CupConductor.SecPerBeat * duration);
+  }
+
+  private void OnDestroy()
+  {
+    // Report miss if cup was never interacted with
+    if (!wasHit && gameManager != null)
+    {
+      gameManager.ReportMiss();
+    }
   }
 
   private void ChangeSpriteToInProgress()
@@ -151,5 +182,34 @@ public class CoffeeController : MonoBehaviour
   private void ChangeSpriteToDefault()
   {
     renderer.sprite = defaultCup;
+  }
+
+  private IEnumerator ScaleBump(float bumpScale, float duration)
+  {
+    Vector3 originalScale = transform.localScale;
+    Vector3 targetScale = originalScale * bumpScale;
+    float halfDuration = duration / 2f;
+
+    // Scale up
+    float elapsed = 0f;
+    while (elapsed < halfDuration)
+    {
+      elapsed += Time.deltaTime;
+      float t = elapsed / halfDuration;
+      transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
+      yield return null;
+    }
+
+    // Scale down
+    elapsed = 0f;
+    while (elapsed < halfDuration)
+    {
+      elapsed += Time.deltaTime;
+      float t = elapsed / halfDuration;
+      transform.localScale = Vector3.Lerp(targetScale, originalScale, t);
+      yield return null;
+    }
+
+    transform.localScale = originalScale;
   }
 }

@@ -13,11 +13,18 @@ public class TeatController : MonoBehaviour
     private new BoxCollider2D collider;
     private Vector3 defaultColliderSize;
 
+    private GameManager gameManager;
+
+    // Track song position at press/release for accurate timing
+    public float songPositionAtPress { get; private set; }
+    public float songPositionAtRelease { get; private set; }
+
     // Start is called before the first frame update
     void Start()
     {
-        animator = gameObject.GetComponent<Animator>();   
+        animator = gameObject.GetComponent<Animator>();
         collider = gameObject.GetComponent<BoxCollider2D>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         defaultColliderSize = collider.size;
     }
@@ -27,11 +34,13 @@ public class TeatController : MonoBehaviour
     {
         if (Input.GetKeyDown(keyPress)) {
             isSqueezing = true;
+            songPositionAtPress = gameManager.songPositionInBeats;
             collider.size = new Vector3(defaultColliderSize.x * 1.5f, defaultColliderSize.y * 2f, 0.0f);
         }
 
         if (Input.GetKeyUp(keyPress)) {
             isSqueezing = false;
+            songPositionAtRelease = gameManager.songPositionInBeats;
             collider.size = defaultColliderSize;
         }
 

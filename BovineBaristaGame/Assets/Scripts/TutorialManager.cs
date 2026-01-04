@@ -37,7 +37,8 @@ public class TutorialManager : MonoBehaviour
     public TMP_Text message;
 
     public GameObject barista;
-    
+    public GameObject skipButton;
+
     private AudioSource metronome;
 
     private Animator baristaAnimator;
@@ -51,12 +52,12 @@ public class TutorialManager : MonoBehaviour
     {
         metronome = GetComponent<AudioSource>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        baristaAnimator = barista.GetComponent<Animator>(); 
+        baristaAnimator = barista.GetComponent<Animator>();
 
         speechBubbleSound = speechBubble.GetComponent<AudioSource>();
         speechBubbleSoundLength = speechBubbleSound.clip.length;
         speechBubble.SetActive(false);
-        
+
         rightHandAnimator = rightHand.GetComponent<Animator>();
         rightHandSprite = rightHand.GetComponent<SpriteRenderer>();
         leftHandAnimator = leftHand.GetComponent<Animator>();
@@ -66,7 +67,7 @@ public class TutorialManager : MonoBehaviour
 
         introPopupIndex = 0;
 
-        Invoke("Blink", 0.5f);        
+        Invoke("Blink", 0.5f);
         Invoke("Talk", 1f);
 
         teats[0].GetComponent<AudioSource>().Play();
@@ -75,14 +76,14 @@ public class TutorialManager : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {        
+    {
         switch(step) {
             case 0:
                 if (introPopupIndex == introPopups.Length && !cowIsInView) {
                     EnterCow();
                 }
                 break;
-            case 1: 
+            case 1:
                 break;
             default:
                 break;
@@ -107,10 +108,10 @@ public class TutorialManager : MonoBehaviour
     /**
      * Barista methods
      **/
-    void Talk() {        
+    void Talk() {
         StopBlinking();
 
-        string[] popUps; int popUpIndex; 
+        string[] popUps; int popUpIndex;
 
         switch(step) {
             case 0:
@@ -122,8 +123,8 @@ public class TutorialManager : MonoBehaviour
                 popUpIndex = handPopupIndex++;
 
                 if (popUpIndex == popUps.Length) {
-                    Invoke("EnterRightHand", shutUpTime);                    
-                    Invoke("EnterLeftHand", shutUpTime + 0.5f);                    
+                    Invoke("EnterRightHand", shutUpTime);
+                    Invoke("EnterLeftHand", shutUpTime + 0.5f);
                     Invoke("MoveLeftHand", shutUpTime + 2.5f);
                     Invoke("MoveLeftHand", shutUpTime + 4.5f);
 
@@ -134,28 +135,28 @@ public class TutorialManager : MonoBehaviour
                     Invoke("IncreaseStep", shutUpTime + 6f);
 
                     Invoke("StartSong", shutUpTime + 6f);
-                }   
+                }
                 break;
-            case 2: 
+            case 2:
                 popUps = cowPopups;
                 popUpIndex = cowPopupIndex++;
                 if (popUpIndex == popUps.Length) {
-                    Invoke("HideBarista", shutUpTime);                    
+                    Invoke("HideBarista", shutUpTime);
                 }
                 break;
-            // case 3: 
+            // case 3:
             //     popUps = rhythmPopups;
             //     popUpIndex = rhythmPopupIndex;
-            
+
             //     break;
-            default: 
+            default:
                 return;
         }
 
         if (popUpIndex == popUps.Length) {
             Invoke("ShutUp", shutUpTime);
             return;
-        }        
+        }
 
         string newMessage = popUps[popUpIndex];
         float talkTime = newMessage.Length * 0.03f;
@@ -207,9 +208,9 @@ public class TutorialManager : MonoBehaviour
 
     void EnterLeftHand() {
         leftHand.SetActive(true);
-        teats[2].SetActive(false);     
+        teats[2].SetActive(false);
         Invoke("LeftHandStartSqueezing", 1f);
-        Invoke("LeftHandStopSqueezing", 3.5f);   
+        Invoke("LeftHandStopSqueezing", 3.5f);
     }
 
     void ExitHands() {
@@ -232,7 +233,7 @@ public class TutorialManager : MonoBehaviour
             rightHandSprite.sortingLayerName = "UI";
             rightHand.transform.position = new Vector2(2.772604f, 2.26f);
         }
-        
+
     }
 
     void MoveLeftHand() {
@@ -255,14 +256,14 @@ public class TutorialManager : MonoBehaviour
 
     void RightHandStopSqueezing() {
         rightHandAnimator.SetBool("isSqueezingTeat", false);
-    } 
+    }
 
     void LeftHandStartSqueezing() {
         leftHandAnimator.SetBool("isSqueezingTeat", true);
     }
 
     void LeftHandStopSqueezing() {
-        leftHandAnimator.SetBool("isSqueezingTeat", false);        
+        leftHandAnimator.SetBool("isSqueezingTeat", false);
     }
 
     /**
@@ -280,5 +281,37 @@ public class TutorialManager : MonoBehaviour
 
     void Moo() {
         cow.GetComponent<AudioSource>().Play();
-    }    
+    }
+
+    public void SkipTutorial() {
+        // Cancel all pending tutorial sequences
+        CancelInvoke();
+
+        // Hide tutorial UI elements
+        speechBubble.SetActive(false);
+        StopTalking();
+        rightHand.SetActive(false);
+        leftHand.SetActive(false);
+        if (skipButton != null) skipButton.SetActive(false);
+        message.text = "";
+
+        // Ensure all teats are active
+        for (int i = 0; i < teats.Length; i++) {
+            teats[i].SetActive(true);
+        }
+
+        // Position cow if not already in view
+        if (!cowIsInView) {
+            cow.transform.position = new Vector3(
+                cow.transform.position.x,
+                cowEndingPositionY,
+                cow.transform.position.z
+            );
+            cowIsInView = true;
+        }
+
+        // Start the game
+        HideBarista();
+        StartSong();
+    }
 }

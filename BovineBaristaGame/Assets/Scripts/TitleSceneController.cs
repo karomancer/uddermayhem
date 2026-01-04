@@ -12,6 +12,9 @@ public class TitleSceneController : MonoBehaviour
   public GameObject logoPrefab;
   public float themeSongBpm = 100f;
 
+  [Header("Scene Transition")]
+  public SceneTransitionManager transitionManager;
+
   private Sun sun;
   private GameObject logoObject;
   private AudioSource themeSong;
@@ -217,14 +220,25 @@ public class TitleSceneController : MonoBehaviour
       }
     }
 
-    if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A))
+    bool keyPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A);
+    bool touchBegan = Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began;
+    bool mouseClicked = Input.GetMouseButtonDown(0);
+
+    if (keyPressed || touchBegan || mouseClicked)
     {
-      Invoke("LoadMainScene", 0.5f);
+      Invoke("LoadLevelSelect", 0.5f);
     }
   }
 
-  void LoadMainScene()
+  void LoadLevelSelect()
   {
-    SceneManager.LoadScene("Main");
+    if (transitionManager != null)
+    {
+      transitionManager.TransitionToScene("LevelSelect");
+    }
+    else
+    {
+      SceneManager.LoadScene("LevelSelect");
+    }
   }
 }

@@ -160,6 +160,10 @@ public class CupConductor : MonoBehaviour
 
   private int cupIndex = 0;
 
+  [Header("Debug")]
+  public NoteTimingDebugger debugger;
+  private int debugToneIndex = 0;
+
   void Start()
   {
     edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
@@ -191,6 +195,20 @@ public class CupConductor : MonoBehaviour
         nextCup.duration,
         0.558664f
       );
+    }
+
+    // Play debug tones at exact beat timing (separate from cup spawning)
+    if (debugger != null && debugToneIndex < CUP_NOTES.Length)
+    {
+      CupNote debugNote = CUP_NOTES[debugToneIndex];
+      float debugNoteBeat = (debugNote.measure * 4) + debugNote.beat - 1;
+
+      // Trigger tone when we cross the exact beat
+      if (songPositionInBeats >= debugNoteBeat)
+      {
+        debugger.PlayNoteTone(debugNote.duration, debugNote.type);
+        debugToneIndex++;
+      }
     }
 
     // Just for debug purposes
