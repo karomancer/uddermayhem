@@ -75,6 +75,12 @@ public class TutorialManager : MonoBehaviour
 
         introPopupIndex = 0;
 
+        // Hide skip button during attract mode
+        if (AttractModeManager.IsAttractModeActive && skipButton != null)
+        {
+            skipButton.SetActive(false);
+        }
+
         Invoke("Blink", 0.5f);
         Invoke("Talk", 1f);
 

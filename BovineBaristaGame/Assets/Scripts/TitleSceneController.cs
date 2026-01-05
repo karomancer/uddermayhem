@@ -15,6 +15,10 @@ public class TitleSceneController : MonoBehaviour
   [Header("Scene Transition")]
   public SceneTransitionManager transitionManager;
 
+  [Header("Attract Mode")]
+  private float idleTimer = 0f;
+  private bool attractModeTriggered = false;
+
   private Sun sun;
   private GameObject logoObject;
   private AudioSource themeSong;
@@ -115,7 +119,7 @@ public class TitleSceneController : MonoBehaviour
   }
 
   /*****************************
-          LOGO METHODS 
+          LOGO METHODS
    *****************************/
   void SpawnLogo()
   {
@@ -130,6 +134,10 @@ public class TitleSceneController : MonoBehaviour
     themeSong = GetComponent<AudioSource>();
     secPerBeat = 60f / themeSongBpm;
     dspSongTime = (float)AudioSettings.dspTime;
+
+    // Reset attract mode state when returning to title
+    idleTimer = 0f;
+    attractModeTriggered = false;
 
     StartCoroutine(SpawnCloud(7.37f, 3.19f, 0.48f, 0));
     StartCoroutine(SpawnCloud(8.87f, -0.07f, 0.33f, 2 * secPerBeat));
@@ -204,7 +212,6 @@ public class TitleSceneController : MonoBehaviour
       if (isLogoGrownYet)
       {
         int angle = (int)logoObject.transform.rotation.eulerAngles.z;
-        Debug.Log("Angle: " + angle + " Direction: " + rotateDirection);
         if ((rotateDirection == 1 && angle == 5) || (rotateDirection == -1 && angle == 355))
         {
           float sunNewScale = sun.raysObject.transform.localScale.x + 0.05f * rotateDirection;
@@ -226,7 +233,27 @@ public class TitleSceneController : MonoBehaviour
 
     if (keyPressed || touchBegan || mouseClicked)
     {
-      Invoke("LoadLevelSelect", 0.5f);
+      // Reset idle timer on any input
+      idleTimer = 0f;
+
+      if (!attractModeTriggered)
+      {
+        Invoke("LoadLevelSelect", 0.5f);
+      }
+    }
+    else
+    {
+      // Increment idle timer when no input
+      idleTimer += Time.deltaTime;
+
+      // Trigger attract mode after timeout
+      if (AttractModeManager.Instance != null &&
+          idleTimer >= AttractModeManager.Instance.titleIdleTimeout &&
+          !attractModeTriggered)
+      {
+        attractModeTriggered = true;
+        AttractModeManager.Instance.StartAttractMode();
+      }
     }
   }
 

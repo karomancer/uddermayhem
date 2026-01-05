@@ -25,6 +25,7 @@ public class CoffeeController : MonoBehaviour
   public float duration = 1.0f;
 
   private string cupTag;
+  public string CupTagName => cupTag;  // Expose for AutoPlayController
 
   private GameManager gameManager;
 

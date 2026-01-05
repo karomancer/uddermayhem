@@ -16,6 +16,7 @@ public class EndScreenManager : MonoBehaviour
     public InitialsEntryUI initialsEntry;
     public GameObject leaderboardPanel;
     public TMP_Text timerText;             // Optional: show countdown for initials entry
+    public GameObject continueButton;      // Hidden during attract mode
 
     [Header("Barista")]
     public BaristaController barista;
@@ -123,6 +124,18 @@ public class EndScreenManager : MonoBehaviour
         // Hide everything except leaderboard
         HideAllPanels();
 
+        // Hide continue button during attract mode
+        if (continueButton != null)
+        {
+            continueButton.SetActive(false);
+        }
+
+        // Hide barista during attract mode
+        if (barista != null)
+        {
+            barista.SetVisible(false);
+        }
+
         if (leaderboardPanel != null)
         {
             leaderboardPanel.SetActive(true);
@@ -134,15 +147,9 @@ public class EndScreenManager : MonoBehaviour
 
     private void HandleAttractModeInput()
     {
-        bool anyInput = Input.anyKeyDown ||
-                       Input.GetMouseButtonDown(0) ||
-                       (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
-
-        if (anyInput)
-        {
-            CancelInvoke("OnContinue");
-            OnContinue();
-        }
+        // Global input handling is now done by AttractModeManager
+        // which will exit attract mode entirely on any input.
+        // Auto-advance is handled by Invoke("OnContinue", ...) in SetupAttractMode
     }
 
     private void SetupPostGameMode()
@@ -397,6 +404,13 @@ public class EndScreenManager : MonoBehaviour
 
     public void OnContinue()
     {
+        // In attract mode, advance to next phase instead of returning to title
+        if (isAttractMode && AttractModeManager.Instance != null)
+        {
+            AttractModeManager.Instance.AdvanceToNextPhase();
+            return;
+        }
+
         if (transitionManager != null)
         {
             transitionManager.TransitionToScene(returnSceneName);

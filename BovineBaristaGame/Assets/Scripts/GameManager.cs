@@ -144,7 +144,8 @@ public class GameManager : MonoBehaviour
       cupConductor.Conduct(songPositionInBeats);
     }
 
-    if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen) {
+    // In attract mode, AutoPlayController handles the fade-out timing
+    if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen && !AttractModeManager.IsAttractModeActive) {
       Invoke("GotToTitleScene", 1f);
       goingToTitleScreen = true;
     } 

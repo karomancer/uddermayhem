@@ -47,7 +47,26 @@ public class TeatController : MonoBehaviour
         animator.SetBool("isSqueezing", isSqueezing);
     }
 
-    public void SetSqueezing(bool squeezing) {
-        isSqueezing = squeezing;
+    /// <summary>
+    /// Programmatically set squeezing state (used by AutoPlayController during attract mode)
+    /// </summary>
+    public void SetSqueezing(bool squeezing)
+    {
+        if (squeezing && !isSqueezing)
+        {
+            // Simulate key down
+            isSqueezing = true;
+            songPositionAtPress = gameManager.songPositionInBeats;
+            collider.size = new Vector3(defaultColliderSize.x * 1.5f, defaultColliderSize.y * 2f, 0.0f);
+        }
+        else if (!squeezing && isSqueezing)
+        {
+            // Simulate key up
+            isSqueezing = false;
+            songPositionAtRelease = gameManager.songPositionInBeats;
+            collider.size = defaultColliderSize;
+        }
+
+        animator.SetBool("isSqueezing", isSqueezing);
     }
 }
