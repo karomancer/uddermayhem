@@ -2618,6 +2618,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4060149021171006543, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 160
+      objectReference: {fileID: 0}
+    - target: {fileID: 4060149021171006543, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 78
+      objectReference: {fileID: 0}
+    - target: {fileID: 4060149021171006543, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4060149021171006543, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 4427097189833036427, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
       propertyPath: m_Name
       value: BaristaPopup
@@ -2662,12 +2678,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5653302718653346587, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5653302718653346587, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 19a273816b4f44cb2b0d91ff0d52d766, type: 3}
+    - target: {fileID: 7704658092650127120, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7704658092650127120, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 969475423}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 3613952511360251421, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
