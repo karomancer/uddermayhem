@@ -228,8 +228,15 @@ public class AttractModeManager : MonoBehaviour
     {
         Debug.Log("AttractModeManager: Ending attract mode");
 
-        // Restore audio
-        AudioListener.volume = originalAudioVolume;
+        // Restore audio (use VolumeManager's saved volume if available)
+        if (VolumeManager.Instance != null)
+        {
+            AudioListener.volume = VolumeManager.Instance.GetVolume();
+        }
+        else
+        {
+            AudioListener.volume = originalAudioVolume;
+        }
 
         // Hide overlay
         if (overlayCanvas != null)
