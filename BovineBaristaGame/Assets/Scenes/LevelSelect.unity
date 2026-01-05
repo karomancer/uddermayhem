@@ -1641,11 +1641,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fc55b6f1e49b43e795604ec629dc37d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  easySceneName: Easy
-  mediumSceneName: Main
-  hardSceneName: Hard
+  easyConfig: {fileID: 11400000, guid: c503092a15772490ca5a4d69e4dc6480, type: 2}
+  mediumConfig: {fileID: 11400000, guid: 991e89fece1fc400bbc14c50127b991a, type: 2}
+  hardConfig: {fileID: 0}
+  levelSceneName: Main
   titleSceneName: Title
-  transitionManager: {fileID: 0}
+  transitionManager: {fileID: 1591951286}
 --- !u!4 &1458308956
 Transform:
   m_ObjectHideFlags: 0

@@ -66,15 +66,20 @@ public class GameManager : MonoBehaviour
   private bool keysAreDisabled = true;
   private bool goingToTitleScreen = false;
 
-  void Start()
+  void Awake()
   {
+    // Initialize components in Awake so they're ready before any Start() calls
     music = GetComponent<AudioSource>();
     cupConductor = GetComponent<CupConductor>();
+
+    // Apply level config in Awake so it's ready before TutorialManager.Start() runs
+    ApplyLevelConfig();
+  }
+
+  void Start()
+  {
     dspSongTime = (float)AudioSettings.dspTime;
     ScoreText.text = "";
-
-    // Apply level config if set
-    ApplyLevelConfig();
   }
 
   private void ApplyLevelConfig()
@@ -88,15 +93,35 @@ public class GameManager : MonoBehaviour
       if (currentLevelConfig.song != null && music != null)
       {
         music.clip = currentLevelConfig.song;
+        Debug.Log($"Set music clip to: {currentLevelConfig.song.name}");
+      }
+      else
+      {
+        Debug.LogWarning($"Song not set! song={currentLevelConfig.song}, music={music}");
       }
 
       // Set BPM on CupConductor
       if (cupConductor != null)
       {
         CupConductor.BPM = (int)currentLevelConfig.bpm;
+        CupConductor.SecPerBeat = 60f / currentLevelConfig.bpm;
+
+        // Load note chart if specified
+        if (currentLevelConfig.noteChart != null)
+        {
+          cupConductor.LoadNotesFromJson(currentLevelConfig.noteChart);
+        }
+        else
+        {
+          Debug.LogWarning("No note chart assigned in LevelConfig!");
+        }
       }
 
       Debug.Log($"Applied level config: {currentLevelConfig.difficultyName}, BPM: {currentLevelConfig.bpm}");
+    }
+    else
+    {
+      Debug.LogWarning("currentLevelConfig is NULL!");
     }
   }
 
@@ -140,11 +165,13 @@ public class GameManager : MonoBehaviour
   }
 
   public void StartSong(float startTime) {
-    music.Play();    
+    Debug.Log($"StartSong called. Clip: {music.clip?.name}, Length: {music.clip?.length}");
+    music.Play();
     dspSongTime = startTime;
     keysAreDisabled = false;
     musicIsPlaying = true;
     Invoke("songIsOver", music.clip.length);
+    Debug.Log($"Music isPlaying: {music.isPlaying}");
   }
 
   void songIsOver() {

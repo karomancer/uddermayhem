@@ -10,6 +10,22 @@ public static class CupTag
   public static readonly string BackRight = "BackRight";
 }
 
+// JSON parsing classes
+[System.Serializable]
+public class NoteChartData
+{
+  public NoteData[] notes;
+}
+
+[System.Serializable]
+public class NoteData
+{
+  public string type;
+  public int measure;
+  public float beat;
+  public float duration;
+}
+
 public class CupConductor : MonoBehaviour
 {
   public GameObject cupPrefab;
@@ -38,7 +54,11 @@ public class CupConductor : MonoBehaviour
       duration = _duration;
     }
   }
-  public static CupNote[] CUP_NOTES = {
+  // Active notes for the current level (loaded from JSON or fallback to default)
+  private CupNote[] activeNotes;
+
+  // Default notes (fallback if no JSON provided)
+  public static CupNote[] DEFAULT_NOTES = {
     new CupNote(CupTag.BackRight, 8, 1.0f, 1.0f),
     new CupNote(CupTag.BackLeft, 8, 2.0f, 1.0f),
     new CupNote(CupTag.FrontRight, 8, 3.5f, 0.5f),
@@ -167,15 +187,67 @@ public class CupConductor : MonoBehaviour
   void Start()
   {
     edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
+
+    // Use default notes if none loaded
+    if (activeNotes == null)
+    {
+      activeNotes = DEFAULT_NOTES;
+    }
+  }
+
+  /// <summary>
+  /// Load notes from a JSON TextAsset. Call this before the song starts.
+  /// </summary>
+  public void LoadNotesFromJson(TextAsset noteChartJson)
+  {
+    if (noteChartJson == null)
+    {
+      Debug.Log("No note chart provided, using default notes");
+      activeNotes = DEFAULT_NOTES;
+      return;
+    }
+
+    try
+    {
+      NoteChartData chartData = JsonUtility.FromJson<NoteChartData>(noteChartJson.text);
+      if (chartData != null && chartData.notes != null && chartData.notes.Length > 0)
+      {
+        activeNotes = new CupNote[chartData.notes.Length];
+        for (int i = 0; i < chartData.notes.Length; i++)
+        {
+          NoteData n = chartData.notes[i];
+          activeNotes[i] = new CupNote(n.type, n.measure, n.beat, n.duration);
+        }
+        Debug.Log($"Loaded {activeNotes.Length} notes from JSON");
+      }
+      else
+      {
+        Debug.LogWarning("Note chart JSON was empty or invalid, using default notes");
+        activeNotes = DEFAULT_NOTES;
+      }
+    }
+    catch (System.Exception e)
+    {
+      Debug.LogError($"Failed to parse note chart JSON: {e.Message}");
+      activeNotes = DEFAULT_NOTES;
+    }
+
+    // Reset cup index when loading new notes
+    cupIndex = 0;
+    debugToneIndex = 0;
   }
 
   public void Conduct(float songPositionInBeats)
   {
+    if (activeNotes == null || cupIndex >= activeNotes.Length)
+    {
+      return;
+    }
+
     int measure = (int)Mathf.Floor(songPositionInBeats / 4);
     float beatInMeasure = (songPositionInBeats % 4) + 1;
 
-
-    CupNote nextCup = CUP_NOTES[cupIndex];
+    CupNote nextCup = activeNotes[cupIndex];
     // Debug.Log("measure: " + measure + " beatInMeasure: " + beatInMeasure + ", nextcup: " + nextCup.measure + " " + nextCup.beat);
 
     float totalBeatNumber = (nextCup.measure * 4) + nextCup.beat - 1;
@@ -198,9 +270,9 @@ public class CupConductor : MonoBehaviour
     }
 
     // Play debug tones at exact beat timing (separate from cup spawning)
-    if (debugger != null && debugToneIndex < CUP_NOTES.Length)
+    if (debugger != null && debugToneIndex < activeNotes.Length)
     {
-      CupNote debugNote = CUP_NOTES[debugToneIndex];
+      CupNote debugNote = activeNotes[debugToneIndex];
       float debugNoteBeat = (debugNote.measure * 4) + debugNote.beat - 1;
 
       // Trigger tone when we cross the exact beat

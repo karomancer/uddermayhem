@@ -95,6 +95,8 @@ public class TutorialManager : MonoBehaviour
     // Skip tutorial without any animation - for non-tutorial levels
     private void SkipTutorialImmediate()
     {
+        Debug.Log("SkipTutorialImmediate called - skipping tutorial");
+
         // Hide tutorial UI elements
         if (speechBubble != null) speechBubble.SetActive(false);
         if (rightHand != null) rightHand.SetActive(false);
@@ -120,6 +122,7 @@ public class TutorialManager : MonoBehaviour
         }
 
         // Start the game immediately
+        Debug.Log("Starting song from SkipTutorialImmediate");
         gameManager.ShowScore();
         gameManager.StartSong((float)AudioSettings.dspTime);
     }

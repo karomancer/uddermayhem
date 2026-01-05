@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a1fa6932dc6c429bba29ee7e21d0d8f, type: 3}
-  m_Name: LevelConfigEasy
+  m_Name: LevelConfigMedium
   m_EditorClassIdentifier: 
-  difficultyName: Easy
-  song: {fileID: 8300000, guid: 813bef13b5905414ba7a5ea188e26ff8, type: 3}
-  bpm: 100
+  difficultyName: Medium
+  song: {fileID: 8300000, guid: bcdd24097da844bc881a8d24dc8efc20, type: 3}
+  bpm: 110
   showTutorial: 0
-  noteChart: {fileID: 4900000, guid: b461151ab4ada4b0e8d1ee13fb730e5b, type: 3}
+  noteChart: {fileID: 4900000, guid: 8f2fe416bb23141b9909ded5faa7082d, type: 3}
   speedMultiplier: 1
   timingLeniency: 1
