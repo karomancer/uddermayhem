@@ -11,8 +11,8 @@ public class VolumeManager : MonoBehaviour
     public string buttonIcon = "♪";
     public int buttonSize = 50;
     public int buttonPadding = 15;
-    public int panelWidth = 200;
-    public int panelHeight = 60;
+    public int panelWidth = 250;
+    public int panelHeight = 80;
 
     [Header("Colors")]
     public Color buttonBackgroundColor = new Color(0, 0, 0, 0.5f);
@@ -230,7 +230,7 @@ public class VolumeManager : MonoBehaviour
         sliderRt.anchorMax = new Vector2(1, 0.5f);
         sliderRt.pivot = new Vector2(0.5f, 0.5f);
         sliderRt.anchoredPosition = Vector2.zero;
-        sliderRt.sizeDelta = new Vector2(-30, 30);  // Padding on sides
+        sliderRt.sizeDelta = new Vector2(-40, 60);  // Larger touch area
 
         // Background
         GameObject bgObj = new GameObject("Background");
@@ -239,8 +239,8 @@ public class VolumeManager : MonoBehaviour
         bgImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
 
         RectTransform bgRt = bgObj.GetComponent<RectTransform>();
-        bgRt.anchorMin = new Vector2(0, 0.25f);
-        bgRt.anchorMax = new Vector2(1, 0.75f);
+        bgRt.anchorMin = new Vector2(0, 0.3f);
+        bgRt.anchorMax = new Vector2(1, 0.7f);
         bgRt.offsetMin = Vector2.zero;
         bgRt.offsetMax = Vector2.zero;
 
@@ -249,8 +249,8 @@ public class VolumeManager : MonoBehaviour
         fillAreaObj.transform.SetParent(sliderObj.transform);
 
         RectTransform fillAreaRt = fillAreaObj.AddComponent<RectTransform>();
-        fillAreaRt.anchorMin = new Vector2(0, 0.25f);
-        fillAreaRt.anchorMax = new Vector2(1, 0.75f);
+        fillAreaRt.anchorMin = new Vector2(0, 0.3f);
+        fillAreaRt.anchorMax = new Vector2(1, 0.7f);
         fillAreaRt.offsetMin = Vector2.zero;
         fillAreaRt.offsetMax = Vector2.zero;
 
@@ -278,14 +278,14 @@ public class VolumeManager : MonoBehaviour
         handleAreaRt.offsetMin = Vector2.zero;
         handleAreaRt.offsetMax = Vector2.zero;
 
-        // Handle
+        // Handle - large for touch (minimum 44x44 recommended)
         GameObject handleObj = new GameObject("Handle");
         handleObj.transform.SetParent(handleAreaObj.transform);
         Image handleImage = handleObj.AddComponent<Image>();
         handleImage.color = Color.white;
 
         RectTransform handleRt = handleObj.GetComponent<RectTransform>();
-        handleRt.sizeDelta = new Vector2(20, 30);
+        handleRt.sizeDelta = new Vector2(44, 50);
 
         volumeSlider.handleRect = handleRt;
         volumeSlider.targetGraphic = handleImage;
