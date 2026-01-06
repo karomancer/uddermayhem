@@ -137,8 +137,8 @@ public class GameManager : MonoBehaviour
       Debug.Log(songPositionInBeats);
 
       if (shouldShowScore) {
-        double tips = currentScore / 100;
-        ScoreText.text = "Tip jar: $" + tips;
+        double tips = currentScore / 100.0;
+        ScoreText.text = $"Tip jar: ${tips:F2}";
       }
 
       cupConductor.Conduct(songPositionInBeats);
