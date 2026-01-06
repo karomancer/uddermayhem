@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class TitleSceneController : MonoBehaviour
@@ -228,10 +229,21 @@ public class TitleSceneController : MonoBehaviour
     }
 
     bool keyPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A);
+
+    // Check touch/mouse input but ignore if over UI elements (like volume slider)
     bool touchBegan = Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began;
     bool mouseClicked = Input.GetMouseButtonDown(0);
 
-    if (keyPressed || touchBegan || mouseClicked)
+    bool pointerOverUI = false;
+    if (EventSystem.current != null)
+    {
+      if (touchBegan)
+        pointerOverUI = EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+      else if (mouseClicked)
+        pointerOverUI = EventSystem.current.IsPointerOverGameObject();
+    }
+
+    if (keyPressed || ((touchBegan || mouseClicked) && !pointerOverUI))
     {
       // Reset idle timer on any input
       idleTimer = 0f;

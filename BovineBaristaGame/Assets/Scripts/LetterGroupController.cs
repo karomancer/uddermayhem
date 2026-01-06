@@ -47,29 +47,4 @@ public class LetterGroupController : MonoBehaviour
             parentUI.CycleLetter(letterIndex);
         }
     }
-
-    // For swipe support
-    public void OnPointerDown()
-    {
-        if (parentUI != null)
-        {
-            parentUI.OnLetterPointerDown(letterIndex);
-        }
-    }
-
-    public void OnPointerUp()
-    {
-        if (parentUI != null)
-        {
-            parentUI.OnLetterPointerUp(letterIndex);
-        }
-    }
-
-    public void OnDrag()
-    {
-        if (parentUI != null)
-        {
-            parentUI.OnLetterDrag(letterIndex);
-        }
-    }
 }

@@ -11,7 +11,7 @@ public class VolumeManager : MonoBehaviour
     public string buttonIcon = "♪";
     public int buttonSize = 50;
     public int buttonPadding = 15;
-    public int panelWidth = 250;
+    public int panelWidth = 500;
     public int panelHeight = 80;
 
     [Header("Colors")]

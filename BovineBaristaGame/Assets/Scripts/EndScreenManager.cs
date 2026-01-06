@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class EndScreenManager : MonoBehaviour
@@ -16,7 +17,7 @@ public class EndScreenManager : MonoBehaviour
     public InitialsEntryUI initialsEntry;
     public GameObject leaderboardPanel;
     public TMP_Text timerText;             // Optional: show countdown for initials entry
-    public GameObject continueButton;      // Hidden during attract mode
+    public TMP_Text difficultyLabel;       // Shows "Easy", "Medium", or "Hard" on leaderboard
 
     [Header("Barista")]
     public BaristaController barista;
@@ -114,6 +115,35 @@ public class EndScreenManager : MonoBehaviour
         {
             OnStateTimerExpired();
         }
+
+        // Allow tap/click to advance during leaderboard display
+        if (currentState == EndScreenState.LeaderboardDisplay)
+        {
+            if (DetectInputNotOnUI())
+            {
+                OnContinue();
+            }
+        }
+    }
+
+    private bool DetectInputNotOnUI()
+    {
+        bool touchBegan = Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began;
+        bool mouseClicked = Input.GetMouseButtonDown(0);
+
+        if (!touchBegan && !mouseClicked)
+            return false;
+
+        // Ignore if over UI elements (like volume slider)
+        if (EventSystem.current != null)
+        {
+            if (touchBegan && EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+                return false;
+            if (mouseClicked && EventSystem.current.IsPointerOverGameObject())
+                return false;
+        }
+
+        return true;
     }
 
     private void SetupAttractMode()
@@ -123,12 +153,6 @@ public class EndScreenManager : MonoBehaviour
 
         // Hide everything except leaderboard
         HideAllPanels();
-
-        // Hide continue button during attract mode
-        if (continueButton != null)
-        {
-            continueButton.SetActive(false);
-        }
 
         // Hide barista during attract mode
         if (barista != null)
@@ -380,6 +404,12 @@ public class EndScreenManager : MonoBehaviour
     {
         if (HighScoreManager.Instance == null || leaderboardEntries == null) return;
 
+        // Set difficulty label
+        if (difficultyLabel != null)
+        {
+            difficultyLabel.text = FormatDifficultyLabel(difficulty);
+        }
+
         List<HighScoreEntry> scores = HighScoreManager.Instance.GetScores(difficulty);
 
         for (int i = 0; i < leaderboardEntries.Length; i++)
@@ -431,5 +461,16 @@ public class EndScreenManager : MonoBehaviour
         {
             transitionManager.OnEnterTransitionComplete -= OnSceneReady;
         }
+    }
+
+    private string FormatDifficultyLabel(string diff)
+    {
+        return diff switch
+        {
+            "Easy" => "EASY",
+            "Medium" => "MEDIUM",
+            "Hard" => "HARD",
+            _ => $"[{diff.ToUpper()}]"
+        };
     }
 }

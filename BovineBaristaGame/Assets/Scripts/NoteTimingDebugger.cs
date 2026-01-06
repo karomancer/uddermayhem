@@ -7,7 +7,7 @@ using UnityEngine;
 public class NoteTimingDebugger : MonoBehaviour
 {
     [Header("Settings")]
-    public bool enableDebugTones = true;
+    public bool enableDebugTones = false;
     public KeyCode toggleKey = KeyCode.T;
 
     [Header("Tone Settings")]

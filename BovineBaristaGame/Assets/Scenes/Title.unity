@@ -196,9 +196,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonIcon: "\u266A"
-  buttonSize: 50
+  buttonSize: 75
   buttonPadding: 15
-  panelWidth: 200
+  panelWidth: 375
   panelHeight: 60
   buttonBackgroundColor: {r: 0, g: 0, b: 0, a: 0.5}
   buttonTextColor: {r: 1, g: 1, b: 1, a: 1}
@@ -1154,9 +1154,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d8cd5c2119ba4f7485fe6c651780a5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  titleIdleTimeout: 10
-  leaderboardDisplayTime: 10
-  tutorialFadeOutTime: 45
+  titleIdleTimeout: 67
+  leaderboardDisplayTime: 15
+  tutorialFadeOutTime: 60
   endScreenSceneName: EndScreen
   mainSceneName: Main
   titleSceneName: Title
