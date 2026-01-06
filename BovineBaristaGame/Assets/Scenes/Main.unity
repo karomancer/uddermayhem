@@ -1369,7 +1369,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce444d3885ff94ff4b26cb4c41699019, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableDebugTones: 1
+  enableDebugTones: 0
   toggleKey: 116
   toneVolume: 0.932
   frontLeftFrequency: 262
