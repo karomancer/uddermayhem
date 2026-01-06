@@ -1,0 +1,2 @@
+CAD/UdderSingularMoldBox.stl filter=lfs diff=lfs merge=lfs -text
+CAD/full_udder.stl filter=lfs diff=lfs merge=lfs -text
