@@ -203,7 +203,8 @@ MonoBehaviour:
   buttonBackgroundColor: {r: 0, g: 0, b: 0, a: 0.5}
   buttonTextColor: {r: 1, g: 1, b: 1, a: 1}
   panelBackgroundColor: {r: 0, g: 0, b: 0, a: 0.8}
-  font: {fileID: 0}
+  handleColor: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 0.8}
+  font: {fileID: 11400000, guid: 08b798127ab5c47278b2c44189515193, type: 2}
   hideOnScenes: []
 --- !u!4 &373243529
 Transform:
