@@ -13,6 +13,8 @@ public class LevelConfig : ScriptableObject
     [Header("Music")]
     public AudioClip song;
     public float bpm = 120f;
+    [Tooltip("Offset in seconds before beat 1 starts (for songs with intros)")]
+    public float firstBeatOffset = 0f;
 
     [Header("Gameplay")]
     public bool showTutorial = false;

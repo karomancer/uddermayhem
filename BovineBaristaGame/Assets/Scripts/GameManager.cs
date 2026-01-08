@@ -118,7 +118,10 @@ public class GameManager : MonoBehaviour
         }
       }
 
-      Debug.Log($"Applied level config: {currentLevelConfig.difficultyName}, BPM: {currentLevelConfig.bpm}");
+      // Apply per-song first beat offset
+      firstBeatOffset = currentLevelConfig.firstBeatOffset;
+
+      Debug.Log($"Applied level config: {currentLevelConfig.difficultyName}, BPM: {currentLevelConfig.bpm}, Offset: {firstBeatOffset}");
     }
     else
     {
