@@ -792,9 +792,21 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7063389827849051276, guid: e4f17c57430ff4cb9885fb043f98d09b, type: 3}
+      propertyPath: perfectCup
+      value: 
+      objectReference: {fileID: -1437885181, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
+    - target: {fileID: 7063389827849051276, guid: e4f17c57430ff4cb9885fb043f98d09b, type: 3}
+      propertyPath: tooLateCup
+      value: 
+      objectReference: {fileID: -391295378, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
+    - target: {fileID: 7063389827849051276, guid: e4f17c57430ff4cb9885fb043f98d09b, type: 3}
       propertyPath: beatInMeasure
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 7063389827849051276, guid: e4f17c57430ff4cb9885fb043f98d09b, type: 3}
+      propertyPath: inProgressCup1
+      value: 
+      objectReference: {fileID: -992473982, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
