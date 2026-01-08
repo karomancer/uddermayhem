@@ -11,7 +11,7 @@ public class BeatManager : MonoBehaviour
     [Tooltip("Base intensity when streak is 0")]
     public float baseIntensity = 0.1f;
     [Tooltip("Maximum intensity at high streaks")]
-    public float maxIntensity = 1.0f;
+    public float maxIntensity = 0.7f;
     [Tooltip("Streak needed for max intensity")]
     public int streakForMaxIntensity = 50;
 

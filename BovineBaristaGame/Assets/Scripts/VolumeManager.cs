@@ -197,11 +197,9 @@ public class VolumeManager : MonoBehaviour
         volumePanel = new GameObject("VolumePanel");
         volumePanel.transform.SetParent(volumeCanvas.transform);
 
-        // Add background image with rounded corners
+        // Add background image
         Image panelBg = volumePanel.AddComponent<Image>();
         panelBg.color = panelBackgroundColor;
-        panelBg.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-        panelBg.type = Image.Type.Sliced;
 
         // Position below the button
         RectTransform rt = volumePanel.GetComponent<RectTransform>();
@@ -243,8 +241,6 @@ public class VolumeManager : MonoBehaviour
         bgObj.transform.SetParent(sliderObj.transform, false);
         Image bgImage = bgObj.AddComponent<Image>();
         bgImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
-        bgImage.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-        bgImage.type = Image.Type.Sliced;
 
         RectTransform bgRt = bgObj.GetComponent<RectTransform>();
         bgRt.anchorMin = new Vector2(0, 0.3f);
@@ -269,8 +265,6 @@ public class VolumeManager : MonoBehaviour
         fillObj.transform.SetParent(fillAreaObj.transform, false);
         Image fillImage = fillObj.AddComponent<Image>();
         fillImage.color = new Color(0.3f, 0.7f, 0.3f, 1f);  // Green fill
-        fillImage.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-        fillImage.type = Image.Type.Sliced;
 
         RectTransform fillRt = fillObj.GetComponent<RectTransform>();
         fillRt.anchorMin = Vector2.zero;
@@ -297,8 +291,6 @@ public class VolumeManager : MonoBehaviour
         handleObj.transform.SetParent(handleAreaObj.transform, false);
         Image handleImage = handleObj.AddComponent<Image>();
         handleImage.color = handleColor;
-        handleImage.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
-        handleImage.type = Image.Type.Simple;
 
         RectTransform handleRt = handleObj.GetComponent<RectTransform>();
         handleRt.sizeDelta = new Vector2(44, 50);

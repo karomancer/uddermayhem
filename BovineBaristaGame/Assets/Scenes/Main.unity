@@ -1097,7 +1097,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2118896746085844452, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
   m_PrefabInstance: {fileID: 8106569754201296150}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 8106569754201296151}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -1354,7 +1354,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseIntensity: 0.1
-  maxIntensity: 1
+  maxIntensity: 0.7
   streakForMaxIntensity: 50
   beatsPerMeasure: 4
 --- !u!114 &969475429
@@ -1371,7 +1371,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableDebugTones: 0
   toggleKey: 116
-  toneVolume: 0.932
+  toneVolume: 0.694
   frontLeftFrequency: 262
   frontRightFrequency: 330
   backLeftFrequency: 392
@@ -2118,6 +2118,11 @@ MonoBehaviour:
   pulseDuration: 0.15
   beatsPerPulse: 1
   minimumIntensity: 0
+  pulseScoreThreshold: 0
+  colorScoreThreshold: 0
+  colors: []
+  beatsPerColorChange: 1
+  preserveAlpha: 1
 --- !u!1 &1576170276
 GameObject:
   m_ObjectHideFlags: 0
@@ -2618,6 +2623,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2118896746085844452, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a981f7267bbbd41f7bc49d67feb7ebae, type: 2}
+    - target: {fileID: 2118896746085844452, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 6236834368253384482, guid: a981f7267bbbd41f7bc49d67feb7ebae, type: 2}
+    - target: {fileID: 2118896746085844452, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4060149021171006543, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
       propertyPath: m_SizeDelta.x
       value: 160
@@ -2698,8 +2715,62 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 3613952511360251421, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3073453527980887025, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8106569754201296152}
+    - targetCorrespondingSourceObject: {fileID: 3073453527980887025, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8106569754201296155}
   m_SourcePrefab: {fileID: 100100000, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+--- !u!1 &8106569754201296151 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3073453527980887025, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+  m_PrefabInstance: {fileID: 8106569754201296150}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8106569754201296152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8106569754201296151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90d4b00a641264d0da83a5d7ecb81eb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseScale: 1.01
+  intensityBonusScale: 0.1
+  pulseDuration: 0.15
+  beatsPerPulse: 1
+  minimumIntensity: 0
+  pulseScoreThreshold: 1000
+  colorScoreThreshold: 2000
+  colors:
+  - {r: 1, g: 0.6627451, b: 0.7607843, a: 1}
+  beatsPerColorChange: 2
+  preserveAlpha: 1
+--- !u!114 &8106569754201296155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8106569754201296151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63c717ea72bda43e4a6b61b3667ca79c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scoreThreshold: 0
+  applyToFill: 1
+  applyToOutline: 1
+  speed: 0.5
+  frequency: 0.3
+  saturation: 0.646
+  brightness: 0.509
+  outlineThickness: 0.2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
