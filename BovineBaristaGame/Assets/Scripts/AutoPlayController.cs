@@ -8,6 +8,10 @@ using UnityEngine;
 /// </summary>
 public class AutoPlayController : MonoBehaviour
 {
+    [Header("Settings")]
+    [Tooltip("Enable autoplay regardless of attract mode")]
+    public bool forceAutoPlay = false;
+
     [Header("Timing")]
     public float fadeOutTime = 25f;  // Seconds into song before fading out
 
@@ -19,9 +23,11 @@ public class AutoPlayController : MonoBehaviour
 
     void Start()
     {
-        // Only active during attract mode tutorial phase
-        if (!AttractModeManager.IsAttractModeActive ||
-            AttractModeManager.CurrentPhase != AttractModeManager.AttractPhase.Tutorial)
+        // Only active during attract mode tutorial phase, unless forceAutoPlay is enabled
+        bool inAttractTutorial = AttractModeManager.IsAttractModeActive &&
+            AttractModeManager.CurrentPhase == AttractModeManager.AttractPhase.Tutorial;
+
+        if (!forceAutoPlay && !inAttractTutorial)
         {
             enabled = false;
             return;
@@ -52,8 +58,11 @@ public class AutoPlayController : MonoBehaviour
 
         Debug.Log($"AutoPlayController: Found {teatControllers.Count} teat controllers");
 
-        // Start fade-out timer
-        StartCoroutine(FadeOutAfterDelay(fadeOutTime));
+        // Start fade-out timer only if in attract mode (not for forceAutoPlay)
+        if (AttractModeManager.IsAttractModeActive)
+        {
+            StartCoroutine(FadeOutAfterDelay(fadeOutTime));
+        }
     }
 
     void Update()
@@ -100,8 +109,8 @@ public class AutoPlayController : MonoBehaviour
         // Press the teat
         teat.SetSqueezing(true);
 
-        // Hold for duration (convert beats to seconds), release slightly early for better timing
-        float holdTime = noteDuration * CupConductor.SecPerBeat * 0.85f;
+        // Hold for duration minus small buffer (release after cup enters but before it exits)
+        float holdTime = noteDuration * CupConductor.SecPerBeat * 0.8f;
         yield return new WaitForSeconds(holdTime);
 
         // Release the teat

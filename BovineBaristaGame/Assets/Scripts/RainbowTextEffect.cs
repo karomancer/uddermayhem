@@ -43,6 +43,8 @@ public class RainbowTextEffect : MonoBehaviour
         textComponent = GetComponent<TMP_Text>();
         gameManager = FindObjectOfType<GameManager>();
 
+        Debug.Log($"RainbowTextEffect Start: gameManager={(gameManager != null ? "FOUND" : "NULL")}, threshold={scoreThreshold}");
+
         if (textComponent != null)
         {
             originalColor = textComponent.color;
@@ -58,7 +60,16 @@ public class RainbowTextEffect : MonoBehaviour
         if (textComponent == null) return;
 
         int currentScore = gameManager != null ? gameManager.CurrentScore : 0;
-        isActive = currentScore >= scoreThreshold;
+
+        bool shouldBeActive = currentScore >= scoreThreshold;
+
+        // Debug: log when state changes
+        if (shouldBeActive && !isActive)
+        {
+            Debug.Log($"Rainbow ACTIVATING: score={currentScore}, threshold={scoreThreshold}");
+        }
+
+        isActive = shouldBeActive;
 
         if (isActive)
         {
@@ -129,11 +140,11 @@ public class RainbowTextEffect : MonoBehaviour
         // Set outline thickness if specified
         if (outlineThickness > 0)
         {
-            textComponent.outlineWidth = outlineThickness;
+            textComponent.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, outlineThickness);
         }
 
-        // Apply rainbow color to outline
-        textComponent.outlineColor = rainbowColor;
+        // Apply rainbow color to outline via material (more reliable for runtime changes)
+        textComponent.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, rainbowColor);
     }
 
     Color GetRainbowColor(float t)

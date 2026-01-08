@@ -2269,6 +2269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50363cb555bcd45cebee3c128ba5d7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  forceAutoPlay: 1
   fadeOutTime: 25
 --- !u!4 &1945596136
 Transform:
@@ -2464,7 +2465,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5878765116695418516, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.47
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 5878765116695418516, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2781,10 +2782,11 @@ MonoBehaviour:
   pulseDuration: 0.15
   beatsPerPulse: 1
   minimumIntensity: 0
-  pulseScoreThreshold: 1000
-  colorScoreThreshold: 2000
+  pulseScoreThreshold: 2500
+  colorScoreThreshold: 5000
   colors:
   - {r: 1, g: 0.6627451, b: 0.7607843, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
   beatsPerColorChange: 2
   preserveAlpha: 1
 --- !u!114 &8106569754201296155
@@ -2799,13 +2801,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63c717ea72bda43e4a6b61b3667ca79c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreThreshold: 0
-  applyToFill: 1
+  scoreThreshold: 3000
+  applyToFill: 0
   applyToOutline: 1
   speed: 0.5
   frequency: 0.3
-  saturation: 0.646
-  brightness: 0.509
+  saturation: 0.819
+  brightness: 0.834
   outlineThickness: 0.2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

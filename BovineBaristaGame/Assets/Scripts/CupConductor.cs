@@ -170,7 +170,7 @@ public class CupConductor : MonoBehaviour
   };
   public static Dictionary<string, Vector3> CupTagEndVector = new Dictionary<string, Vector3>
   {
-    {CupTag.FrontLeft, new Vector3(-1.7798f, -2.6906f, 0f)},
+    {CupTag.FrontLeft, new Vector3(-1.6f, -2.6906f, 0f)},
     {CupTag.FrontRight, new Vector3(2.9357f, -2.6906f, 0f)},
     {CupTag.BackLeft, new Vector3(-3.5646f, -1.27f, 0f)},
     {CupTag.BackRight, new Vector3(1.13f, -1.27f, 0f)}
