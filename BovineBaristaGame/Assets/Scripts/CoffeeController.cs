@@ -5,27 +5,40 @@ using UnityEngine;
 enum CupState
 {
   Default,
-  InProgress,
+  InProgress1,
+  InProgress2,
   OverFilled,
   TippedOver,
   Perfect
 }
 
+// enum DurationCup : float
+// {
+//   0.5f = "XS",
+//   1.0f = "S",
+//   2.0f = "M",
+//   4.0f = "L",
+// }
+
 public class CoffeeController : MonoBehaviour
 {
   // TODO: refactor this bullshit
-  public Sprite defaultCup;
-  public Sprite tooEarlyCup;
-  public Sprite tooLateCup;
-  public Sprite inProgressCup;
-  public Sprite perfectCup;
-
   public int measure = 4;
   public float beatInMeasure = 1.0f;
   public float duration = 1.0f;
 
   private string cupTag;
   public string CupTagName => cupTag;  // Expose for AutoPlayController
+
+  // Loaded in programatically
+  private Sprite defaultCup;
+  private Sprite tooEarlyCup;
+  private Sprite tooLateCup;
+  private Sprite inProgressCup1;
+  private Sprite inProgressCup2;
+  private Sprite perfectCup;
+
+  private Sprite[] cupSprites;
 
   private GameManager gameManager;
 
@@ -53,7 +66,48 @@ public class CoffeeController : MonoBehaviour
   {
     gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     renderer = GetComponent<SpriteRenderer>();
-    defaultCup = renderer.sprite;
+
+    switch (duration)
+    {
+      case 0.5f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-XS-spritesheet");
+        defaultCup = cupSprites[0];
+        perfectCup = cupSprites[1];
+        tooLateCup = cupSprites[2];
+        tooEarlyCup = cupSprites[3];
+        break;
+      case 1.0f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-S-spritesheet");
+        defaultCup = cupSprites[0];
+        inProgressCup1 = cupSprites[1];
+        tooEarlyCup = cupSprites[2];
+        tooLateCup = cupSprites[3];
+        perfectCup = cupSprites[4];
+        break;
+      case 2.0f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-M-spritesheet");
+        defaultCup = cupSprites[0];
+        inProgressCup1 = cupSprites[1];
+        perfectCup = cupSprites[2];
+        tooLateCup = cupSprites[3];
+        tooEarlyCup = cupSprites[4];
+        break;
+      case 4.0f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-L-spritesheet");
+        defaultCup = cupSprites[0];
+        inProgressCup1 = cupSprites[1];
+        inProgressCup2 = cupSprites[2];
+        perfectCup = cupSprites[3];
+        tooLateCup = cupSprites[4];
+        tooEarlyCup = cupSprites[5];
+        break;
+      default:
+        Debug.LogError("Invalid cup duration: " + duration);
+        break;
+    }
+
+    // defaultCup = renderer.sprite;
+    renderer.sprite = defaultCup;
 
     renderer.sortingOrder = (cupTag == CupTag.BackLeft || cupTag == CupTag.BackRight) ? 0 : 1;
 
@@ -86,7 +140,8 @@ public class CoffeeController : MonoBehaviour
         wasHit = true; // Mark as interacted with
 
         // Cancel any pending sprite changes
-        CancelInvoke("ChangeSpriteToInProgress");
+        CancelInvoke("ChangeSpriteToInProgress1");
+        CancelInvoke("ChangeSpriteToInProgress2");
         CancelInvoke("ChangeSpriteToTippedOver");
 
         TeatController teatController = other.gameObject.GetComponent<TeatController>();
@@ -104,8 +159,13 @@ public class CoffeeController : MonoBehaviour
 
           if (duration > 0.5f)
           {
-            Invoke("ChangeSpriteToInProgress", adjustedDelay);
-            currentState = CupState.InProgress;
+            Invoke("ChangeSpriteToInProgress1", adjustedDelay);
+            currentState = CupState.InProgress1;
+          }
+          else if (duration > 0.75f)
+          {
+            Invoke("ChangeSpriteToInProgress2", adjustedDelay);
+            currentState = CupState.InProgress2;
           }
         }
         else
@@ -160,9 +220,14 @@ public class CoffeeController : MonoBehaviour
     }
   }
 
-  private void ChangeSpriteToInProgress()
+  private void ChangeSpriteToInProgress1()
   {
-    renderer.sprite = inProgressCup;
+    renderer.sprite = inProgressCup1;
+  }
+
+  private void ChangeSpriteToInProgress2()
+  {
+    renderer.sprite = inProgressCup2;
   }
 
   private void ChangeSpriteToTippedOver()
