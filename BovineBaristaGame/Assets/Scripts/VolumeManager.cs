@@ -18,6 +18,8 @@ public class VolumeManager : MonoBehaviour
     public Color buttonBackgroundColor = new Color(0, 0, 0, 0.5f);
     public Color buttonTextColor = Color.white;
     public Color panelBackgroundColor = new Color(0, 0, 0, 0.8f);
+    public Color handleColor = new Color(0, 0, 0, 0.8f);
+
 
     [Header("Font")]
     public TMP_FontAsset font;
@@ -217,7 +219,8 @@ public class VolumeManager : MonoBehaviour
     {
         // Slider container
         GameObject sliderObj = new GameObject("VolumeSlider");
-        sliderObj.transform.SetParent(volumePanel.transform);
+        sliderObj.AddComponent<RectTransform>();
+        sliderObj.transform.SetParent(volumePanel.transform, false);
 
         volumeSlider = sliderObj.AddComponent<Slider>();
         volumeSlider.minValue = 0f;
@@ -234,7 +237,8 @@ public class VolumeManager : MonoBehaviour
 
         // Background
         GameObject bgObj = new GameObject("Background");
-        bgObj.transform.SetParent(sliderObj.transform);
+        bgObj.AddComponent<RectTransform>();
+        bgObj.transform.SetParent(sliderObj.transform, false);
         Image bgImage = bgObj.AddComponent<Image>();
         bgImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
 
@@ -246,9 +250,10 @@ public class VolumeManager : MonoBehaviour
 
         // Fill area
         GameObject fillAreaObj = new GameObject("Fill Area");
-        fillAreaObj.transform.SetParent(sliderObj.transform);
+        fillAreaObj.AddComponent<RectTransform>();
+        fillAreaObj.transform.SetParent(sliderObj.transform, false);
 
-        RectTransform fillAreaRt = fillAreaObj.AddComponent<RectTransform>();
+        RectTransform fillAreaRt = fillAreaObj.GetComponent<RectTransform>();
         fillAreaRt.anchorMin = new Vector2(0, 0.3f);
         fillAreaRt.anchorMax = new Vector2(1, 0.7f);
         fillAreaRt.offsetMin = Vector2.zero;
@@ -256,7 +261,8 @@ public class VolumeManager : MonoBehaviour
 
         // Fill
         GameObject fillObj = new GameObject("Fill");
-        fillObj.transform.SetParent(fillAreaObj.transform);
+        fillObj.AddComponent<RectTransform>();
+        fillObj.transform.SetParent(fillAreaObj.transform, false);
         Image fillImage = fillObj.AddComponent<Image>();
         fillImage.color = new Color(0.3f, 0.7f, 0.3f, 1f);  // Green fill
 
@@ -270,9 +276,10 @@ public class VolumeManager : MonoBehaviour
 
         // Handle slide area
         GameObject handleAreaObj = new GameObject("Handle Slide Area");
-        handleAreaObj.transform.SetParent(sliderObj.transform);
+        handleAreaObj.AddComponent<RectTransform>();
+        handleAreaObj.transform.SetParent(sliderObj.transform, false);
 
-        RectTransform handleAreaRt = handleAreaObj.AddComponent<RectTransform>();
+        RectTransform handleAreaRt = handleAreaObj.GetComponent<RectTransform>();
         handleAreaRt.anchorMin = Vector2.zero;
         handleAreaRt.anchorMax = Vector2.one;
         handleAreaRt.offsetMin = Vector2.zero;
@@ -280,9 +287,10 @@ public class VolumeManager : MonoBehaviour
 
         // Handle - large for touch (minimum 44x44 recommended)
         GameObject handleObj = new GameObject("Handle");
-        handleObj.transform.SetParent(handleAreaObj.transform);
+        handleObj.AddComponent<RectTransform>();
+        handleObj.transform.SetParent(handleAreaObj.transform, false);
         Image handleImage = handleObj.AddComponent<Image>();
-        handleImage.color = Color.white;
+        handleImage.color = handleColor;
 
         RectTransform handleRt = handleObj.GetComponent<RectTransform>();
         handleRt.sizeDelta = new Vector2(44, 50);

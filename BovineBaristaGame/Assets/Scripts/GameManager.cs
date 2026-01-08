@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour
   public TMP_Text ScoreText;
   public TMP_Text StreakText; // Optional UI for streak display
   private float currentScore = 0;
+  public int CurrentScore => (int)currentScore;
   private int OnTimeScore = 0;
   private int TooEarlyScore = 0;
   private int TooLateScore = 0;
@@ -126,7 +127,7 @@ public class GameManager : MonoBehaviour
   }
 
   void Update()
-  {    
+  {
     if (musicIsPlaying)
     {
       //determine how many seconds since the song started
@@ -134,7 +135,7 @@ public class GameManager : MonoBehaviour
 
       //determine how many beats since the song started
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
-      Debug.Log(songPositionInBeats);
+      // Debug.Log(songPositionInBeats);
 
       if (shouldShowScore) {
         double tips = currentScore / 100.0;
@@ -148,7 +149,7 @@ public class GameManager : MonoBehaviour
     if (!music.isPlaying && !keysAreDisabled && !goingToTitleScreen && !AttractModeManager.IsAttractModeActive) {
       Invoke("GotToTitleScene", 1f);
       goingToTitleScreen = true;
-    } 
+    }
 
     if (Input.GetKeyDown(KeyCode.Space))
     {
