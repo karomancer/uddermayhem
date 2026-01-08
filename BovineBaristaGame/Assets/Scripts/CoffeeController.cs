@@ -12,14 +12,6 @@ enum CupState
   Perfect
 }
 
-// enum DurationCup : float
-// {
-//   0.5f = "XS",
-//   1.0f = "S",
-//   2.0f = "M",
-//   4.0f = "L",
-// }
-
 public class CoffeeController : MonoBehaviour
 {
   // TODO: refactor this bullshit
@@ -66,6 +58,8 @@ public class CoffeeController : MonoBehaviour
   {
     gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     renderer = GetComponent<SpriteRenderer>();
+    renderer.sortingOrder = (cupTag == CupTag.BackLeft || cupTag == CupTag.BackRight) ? 0 : 1;
+    transform.localScale = new Vector3(scale, scale, 0f);
 
     switch (duration)
     {
@@ -109,9 +103,6 @@ public class CoffeeController : MonoBehaviour
     // defaultCup = renderer.sprite;
     renderer.sprite = defaultCup;
 
-    renderer.sortingOrder = (cupTag == CupTag.BackLeft || cupTag == CupTag.BackRight) ? 0 : 1;
-
-    transform.localScale = new Vector3(scale, scale, 0f);
 
     endX = CupConductor.CupTagEndVector[cupTag].x;
 
@@ -157,15 +148,15 @@ public class CoffeeController : MonoBehaviour
           // Immediate visual feedback - subtle scale bump
           StartCoroutine(ScaleBump(1.08f, 0.15f));
 
-          if (duration > 0.5f)
+          if (duration > 0.5f && duration < 4.0f)
           {
             Invoke("ChangeSpriteToInProgress1", adjustedDelay);
-            currentState = CupState.InProgress1;
           }
-          else if (duration > 0.75f)
+
+          if (duration == 4.0f)
           {
+            Invoke("ChangeSpriteToInProgress1", adjustedDelay / 2);
             Invoke("ChangeSpriteToInProgress2", adjustedDelay);
-            currentState = CupState.InProgress2;
           }
         }
         else
@@ -223,11 +214,13 @@ public class CoffeeController : MonoBehaviour
   private void ChangeSpriteToInProgress1()
   {
     renderer.sprite = inProgressCup1;
+    currentState = CupState.InProgress1;
   }
 
   private void ChangeSpriteToInProgress2()
   {
     renderer.sprite = inProgressCup2;
+    currentState = CupState.InProgress2;
   }
 
   private void ChangeSpriteToTippedOver()
