@@ -15,7 +15,7 @@ MonoBehaviour:
   difficultyName: Medium
   song: {fileID: 8300000, guid: bcdd24097da844bc881a8d24dc8efc20, type: 3}
   bpm: 110
-  showTutorial: 0
+  showTutorial: 1
   noteChart: {fileID: 4900000, guid: 8f2fe416bb23141b9909ded5faa7082d, type: 3}
   speedMultiplier: 1
   timingLeniency: 1

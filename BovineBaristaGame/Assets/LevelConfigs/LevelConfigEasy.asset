@@ -15,7 +15,7 @@ MonoBehaviour:
   difficultyName: Easy
   song: {fileID: 8300000, guid: 813bef13b5905414ba7a5ea188e26ff8, type: 3}
   bpm: 100
-  showTutorial: 0
+  showTutorial: 1
   noteChart: {fileID: 4900000, guid: b461151ab4ada4b0e8d1ee13fb730e5b, type: 3}
   speedMultiplier: 1
   timingLeniency: 1

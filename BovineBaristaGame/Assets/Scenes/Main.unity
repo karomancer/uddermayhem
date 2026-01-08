@@ -2281,8 +2281,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50363cb555bcd45cebee3c128ba5d7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceAutoPlay: 1
-  fadeOutTime: 25
+  forceAutoPlay: 0
+  fadeOutTime: 45
 --- !u!4 &1945596136
 Transform:
   m_ObjectHideFlags: 0
