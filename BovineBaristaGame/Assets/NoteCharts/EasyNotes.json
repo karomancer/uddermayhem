@@ -1,10 +1,10 @@
 {
   "notes": [
-    { "type": "FrontLeft", "measure": 3, "beat": 1.0, "duration": 1.0 },
-    { "type": "FrontRight", "measure": 4, "beat": 1.0, "duration": 1.0 },
-    { "type": "FrontLeft", "measure": 5, "beat": 1.0, "duration": 1.0 },
-    { "type": "FrontRight", "measure": 6, "beat": 1.0, "duration": 1.0 },
-    { "type": "FrontLeft", "measure": 6, "beat": 3.0, "duration": 1.0 },
+    { "type": "FrontLeft", "measure": 2, "beat": 1.0, "duration": 2.0 },
+    { "type": "FrontRight", "measure": 3, "beat": 1.0, "duration": 2.0 },
+    { "type": "FrontLeft", "measure": 4, "beat": 1.0, "duration": 2.0 },
+    { "type": "FrontRight", "measure": 5, "beat": 1.0, "duration": 2.0 },
+    { "type": "FrontLeft", "measure": 5, "beat": 3.0, "duration": 2.0 },
 
     { "type": "BackLeft", "measure": 7, "beat": 1.0, "duration": 1.0 },
     { "type": "BackRight", "measure": 8, "beat": 1.0, "duration": 1.0 },
