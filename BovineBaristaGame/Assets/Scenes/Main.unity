@@ -2760,6 +2760,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 969475423}
+    - target: {fileID: 7704658092650127120, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SkipTutorial
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 3613952511360251421, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
