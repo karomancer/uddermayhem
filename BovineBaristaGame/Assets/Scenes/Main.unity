@@ -2801,7 +2801,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63c717ea72bda43e4a6b61b3667ca79c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreThreshold: 3000
+  scoreThreshold: 9999
   applyToFill: 0
   applyToOutline: 1
   speed: 0.5
