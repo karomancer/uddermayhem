@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Udder Mayhem
+Comment=Launch the game
+Exec=/home/uddermayhem/Desktop/LAUNCH.sh
+Icon=applications-games
+Terminal=true
+Type=Application
+Categories=Game;
