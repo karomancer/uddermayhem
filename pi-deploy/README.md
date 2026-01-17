@@ -28,9 +28,9 @@ Desktop/
 └── UdderMayhem.desktop   # From this pi-deploy folder
 ```
 
-## Step 3: Make Files Executable
+## Step 3: Make Files Executable (If Applicable)
 
-On the Pi, open a terminal and run:
+The files are already committed with the correct bits to allow this, but in case that doesn't work for some reason, open a terminal on the Pi and run:
 
 ```bash
 chmod +x ~/Desktop/LAUNCH.sh
