@@ -1,10 +1,12 @@
-using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 enum CupState
 {
   Default,
-  InProgress,
+  InProgress1,
+  InProgress2,
   OverFilled,
   TippedOver,
   Perfect
@@ -13,19 +15,23 @@ enum CupState
 public class CoffeeController : MonoBehaviour
 {
   // TODO: refactor this bullshit
-  public Sprite defaultCup;
-  public Sprite tooEarlyCup;
-  public Sprite tooLateCup;
-  public Sprite inProgressCup;
-  public Sprite perfectCup;
-
   public int measure = 4;
   public float beatInMeasure = 1.0f;
   public float duration = 1.0f;
 
   private string cupTag;
+  public string CupTagName => cupTag;  // Expose for AutoPlayController
 
-  private ScoreManager scoreManager;
+  // Loaded in programatically
+  private Sprite defaultCup;
+  private Sprite tooEarlyCup;
+  private Sprite tooLateCup;
+  private Sprite inProgressCup1;
+  private Sprite inProgressCup2;
+  private Sprite perfectCup;
+
+  private Sprite[] cupSprites;
+
   private GameManager gameManager;
 
   private new SpriteRenderer renderer;
@@ -35,11 +41,11 @@ public class CoffeeController : MonoBehaviour
   private float scale;
 
   private float endX;
-  private bool initialOnTime = false;
-  private float squeezingStartTime = 0f;
-  private int collisionCount = 0;
-  private float perfectPressTime;
-  private float perfectReleaseTime;
+
+  private bool wasHit = false; // Track if cup was interacted with
+  private bool hasBeenProcessed = false; // Prevent multiple entry processing
+  private bool hasExitBeenProcessed = false; // Prevent multiple exit processing
+  private float entryTime = -1f; // Track when entry happened for minimum hold validation
 
   public void init(string _cupTag, int _measure, float _beatInMeasure, float _duration, float _scale)
   {
@@ -48,33 +54,70 @@ public class CoffeeController : MonoBehaviour
     beatInMeasure = _beatInMeasure;
     duration = _duration;
     scale = _scale;
-
-    // Retrieve pre-calculated perfect press and release times
-    CupConductor.CupNote cupNote = CupConductor.CUP_NOTES.First(note => note.type == _cupTag && note.measure == _measure && note.beat == _beatInMeasure);
-    perfectPressTime = cupNote.perfectPressTime;
-    perfectReleaseTime = cupNote.perfectReleaseTime;
   }
 
   void Start()
   {
-    scoreManager = ScoreManager.Instance;
     gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     renderer = GetComponent<SpriteRenderer>();
-    defaultCup = renderer.sprite;
-
     renderer.sortingOrder = (cupTag == CupTag.BackLeft || cupTag == CupTag.BackRight) ? 0 : 1;
-
     transform.localScale = new Vector3(scale, scale, 0f);
+
+    switch (duration)
+    {
+      case 0.5f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-XS-spritesheet");
+        defaultCup = cupSprites[0];
+        perfectCup = cupSprites[1];
+        tooLateCup = cupSprites[2];
+        tooEarlyCup = cupSprites[3];
+        break;
+      case 1.0f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-S-spritesheet");
+        defaultCup = cupSprites[0];
+        inProgressCup1 = cupSprites[1];
+        tooEarlyCup = cupSprites[2];
+        tooLateCup = cupSprites[3];
+        perfectCup = cupSprites[4];
+        break;
+      case 2.0f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-M-spritesheet");
+        defaultCup = cupSprites[0];
+        inProgressCup1 = cupSprites[1];
+        perfectCup = cupSprites[2];
+        tooLateCup = cupSprites[3];
+        tooEarlyCup = cupSprites[4];
+        break;
+      case 4.0f:
+        cupSprites = Resources.LoadAll<Sprite>("cup-L-spritesheet");
+        defaultCup = cupSprites[0];
+        inProgressCup1 = cupSprites[1];
+        inProgressCup2 = cupSprites[2];
+        perfectCup = cupSprites[3];
+        tooLateCup = cupSprites[4];
+        tooEarlyCup = cupSprites[5];
+        break;
+      default:
+        Debug.LogError("Invalid cup duration: " + duration);
+        break;
+    }
+
+    // defaultCup = renderer.sprite;
+    renderer.sprite = defaultCup;
+
 
     endX = CupConductor.CupTagEndVector[cupTag].x;
 
-    Invoke("Serve", CupConductor.SecPerBeat + duration * CupConductor.SecPerBeat + 1.0f * CupConductor.SecPerBeat);
+    // Wait for cup to arrive (1 beat) + hold duration (in beats) + linger time (0.5 beats) before sliding away
+    float lingerBeats = 0.5f;  // Extra beats to show completed cup
+    Invoke("Serve", CupConductor.SecPerBeat * (1 + duration + lingerBeats));
   }
 
   void Update()
   {
     if (transform.position.x != endX)
     {
+      // CupConductor.SecPerBeat;
       float speed = (endX - transform.position.x) * 5;
       transform.Translate(Vector2.right * speed * Time.deltaTime);
     }
@@ -85,29 +128,48 @@ public class CoffeeController : MonoBehaviour
     if (other.gameObject.tag == "Teat")
     {
       string otherType = other.gameObject.name.Split("_")[1];
-      if (otherType != cupTag) return;
-
-      collisionCount++;
       float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
-      float currentTime = (float)(AudioSettings.dspTime - gameManager.dspSongTime);
-      float timeDelta = currentTime - perfectPressTime;
-      scoreManager.Judge(timeDelta);
+      if (otherType == cupTag && !hasBeenProcessed)
+      {
+        hasBeenProcessed = true; // Prevent re-processing
+        wasHit = true; // Mark as interacted with
 
-      if (Mathf.Abs(currentTime - perfectPressTime) <= scoreManager.beatAllowance)
-      {
-        initialOnTime = true;
-        squeezingStartTime = Time.time;
-        if (duration > 0.5f)
+        // Cancel any pending sprite changes
+        CancelInvoke("ChangeSpriteToInProgress1");
+        CancelInvoke("ChangeSpriteToInProgress2");
+        CancelInvoke("ChangeSpriteToTippedOver");
+
+        TeatController teatController = other.gameObject.GetComponent<TeatController>();
+        float inputTime = teatController.songPositionAtPress;
+        entryTime = inputTime; // Track entry time for hold validation
+        // Score on entry but don't affect streak - streak only changes on release
+        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure, inputTime, affectStreak: false);
+
+        // Adjust delay to account for time elapsed since actual input
+        float timeSincePress = (gameManager.songPositionInBeats - inputTime) * CupConductor.SecPerBeat;
+        float adjustedDelay = Mathf.Max(0, animationDuration - timeSincePress);
+
+        if (timing == BeatTiming.OnTime)
         {
-          Invoke("ChangeSpriteToInProgress", animationDuration);
-          currentState = CupState.InProgress;
+          // Immediate visual feedback - subtle scale bump
+          StartCoroutine(ScaleBump(1.08f, 0.15f));
+
+          if (duration > 0.5f && duration < 4.0f)
+          {
+            Invoke("ChangeSpriteToInProgress1", adjustedDelay);
+          }
+
+          if (duration == 4.0f)
+          {
+            Invoke("ChangeSpriteToInProgress1", adjustedDelay / 2);
+            Invoke("ChangeSpriteToInProgress2", adjustedDelay);
+          }
         }
-      }
-      else
-      {
-        initialOnTime = false;
-        Invoke("ChangeSpriteToTippedOver", 1.0f * CupConductor.SecPerBeat);
-        currentState = CupState.TippedOver;
+        else
+        {
+          Invoke("ChangeSpriteToTippedOver", adjustedDelay);
+          currentState = CupState.TippedOver;
+        }
       }
     }
   }
@@ -117,24 +179,29 @@ public class CoffeeController : MonoBehaviour
     if (other.gameObject.tag == "Teat")
     {
       string otherType = other.gameObject.name.Split("_")[1];
-      if (otherType != cupTag) return;
-
-      float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
-      if (currentState != CupState.TippedOver)
+      if (otherType == cupTag && currentState != CupState.TippedOver && !hasExitBeenProcessed)
       {
-        float squeezingDuration = Time.time - squeezingStartTime;
-        float currentTime = (float)(AudioSettings.dspTime - gameManager.dspSongTime);
-        float timeDelta = currentTime - perfectReleaseTime;
-        scoreManager.Judge(timeDelta);
+        hasExitBeenProcessed = true; // Prevent re-processing exit
+        TeatController teatController = other.gameObject.GetComponent<TeatController>();
+        float inputTime = teatController.songPositionAtRelease;
 
-        if (initialOnTime
-          && Mathf.Abs(currentTime - perfectReleaseTime) <= scoreManager.beatAllowance
-          && Mathf.Abs(duration * CupConductor.SecPerBeat - squeezingDuration) <= scoreManager.beatAllowance * 2
-        )
+        // Check minimum hold duration - must hold for at least half the expected duration
+        float minimumHoldBeats = duration * 0.5f;
+        float actualHoldBeats = inputTime - entryTime;
+        if (actualHoldBeats < minimumHoldBeats)
+        {
+          // Released too quickly - treat as failed
+          ChangeSpriteToTippedOver();
+          gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime); // Still score, but will be TooEarly
+          return;
+        }
+
+        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime);
+        if (timing == BeatTiming.OnTime)
         {
           ChangeSpriteToLatteArt();
         }
-        else if (currentTime > perfectReleaseTime + scoreManager.beatAllowance)
+        else if (timing == BeatTiming.TooLate)
         {
           ChangeSpriteToOverFilled();
         }
@@ -153,9 +220,25 @@ public class CoffeeController : MonoBehaviour
     Destroy(gameObject, CupConductor.SecPerBeat * duration);
   }
 
-  private void ChangeSpriteToInProgress()
+  private void OnDestroy()
   {
-    renderer.sprite = inProgressCup;
+    // Report miss if cup was never interacted with
+    if (!wasHit && gameManager != null)
+    {
+      gameManager.ReportMiss();
+    }
+  }
+
+  private void ChangeSpriteToInProgress1()
+  {
+    renderer.sprite = inProgressCup1;
+    currentState = CupState.InProgress1;
+  }
+
+  private void ChangeSpriteToInProgress2()
+  {
+    renderer.sprite = inProgressCup2;
+    currentState = CupState.InProgress2;
   }
 
   private void ChangeSpriteToTippedOver()
@@ -176,5 +259,34 @@ public class CoffeeController : MonoBehaviour
   private void ChangeSpriteToDefault()
   {
     renderer.sprite = defaultCup;
+  }
+
+  private IEnumerator ScaleBump(float bumpScale, float duration)
+  {
+    Vector3 originalScale = transform.localScale;
+    Vector3 targetScale = originalScale * bumpScale;
+    float halfDuration = duration / 2f;
+
+    // Scale up
+    float elapsed = 0f;
+    while (elapsed < halfDuration)
+    {
+      elapsed += Time.deltaTime;
+      float t = elapsed / halfDuration;
+      transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
+      yield return null;
+    }
+
+    // Scale down
+    elapsed = 0f;
+    while (elapsed < halfDuration)
+    {
+      elapsed += Time.deltaTime;
+      float t = elapsed / halfDuration;
+      transform.localScale = Vector3.Lerp(targetScale, originalScale, t);
+      yield return null;
+    }
+
+    transform.localScale = originalScale;
   }
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class TitleSceneController : MonoBehaviour
@@ -11,6 +12,13 @@ public class TitleSceneController : MonoBehaviour
   public GameObject sunraysPrefab;
   public GameObject logoPrefab;
   public float themeSongBpm = 100f;
+
+  [Header("Scene Transition")]
+  public SceneTransitionManager transitionManager;
+
+  [Header("Attract Mode")]
+  private float idleTimer = 0f;
+  private bool attractModeTriggered = false;
 
   private Sun sun;
   private GameObject logoObject;
@@ -124,10 +132,13 @@ public class TitleSceneController : MonoBehaviour
 
   void Start()
   {
-    SceneManager.LoadScene("PersistentScripts", LoadSceneMode.Additive);
     themeSong = GetComponent<AudioSource>();
     secPerBeat = 60f / themeSongBpm;
     dspSongTime = (float)AudioSettings.dspTime;
+
+    // Reset attract mode state when returning to title
+    idleTimer = 0f;
+    attractModeTriggered = false;
 
     StartCoroutine(SpawnCloud(7.37f, 3.19f, 0.48f, 0));
     StartCoroutine(SpawnCloud(8.87f, -0.07f, 0.33f, 2 * secPerBeat));
@@ -217,14 +228,69 @@ public class TitleSceneController : MonoBehaviour
       }
     }
 
-    if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A))
+    // Check for any key press - new input system or legacy fallback
+    bool keyPressed = false;
+    if (InputManager.Instance != null)
     {
-      Invoke("LoadMainScene", 0.5f);
+      // Gameplay keys (W/Q/A/S, gamepad teat buttons) or Submit (Enter/Space, gamepad A)
+      keyPressed = InputManager.Instance.AnyGameplayKeyPressed() ||
+                   InputManager.Instance.Submit.WasPressedThisFrame();
+    }
+    else
+    {
+      keyPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) ||
+                   Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A) ||
+                   Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space);
+    }
+
+    // Check touch/mouse input but ignore if over UI elements (like volume slider)
+    bool touchBegan = Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began;
+    bool mouseClicked = Input.GetMouseButtonDown(0);
+
+    bool pointerOverUI = false;
+    if (EventSystem.current != null)
+    {
+      if (touchBegan)
+        pointerOverUI = EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+      else if (mouseClicked)
+        pointerOverUI = EventSystem.current.IsPointerOverGameObject();
+    }
+
+    if (keyPressed || ((touchBegan || mouseClicked) && !pointerOverUI))
+    {
+      // Reset idle timer on any input
+      idleTimer = 0f;
+
+      if (!attractModeTriggered)
+      {
+        Invoke("LoadLevelSelect", 0.5f);
+      }
+    }
+    else
+    {
+      // Increment idle timer when no input
+      idleTimer += Time.deltaTime;
+
+      // Trigger attract mode after timeout
+      if (AttractModeManager.Instance != null &&
+          idleTimer >= AttractModeManager.Instance.titleIdleTimeout &&
+          !attractModeTriggered)
+      {
+        attractModeTriggered = true;
+        AttractModeManager.Instance.StartAttractMode();
+      }
     }
   }
 
-  void LoadMainScene()
+  void LoadLevelSelect()
   {
-    SceneManager.LoadScene("Main");
+    if (transitionManager != null)
+    {
+      transitionManager.TransitionToScene("LevelSelect");
+    }
+    else
+    {
+      SceneManager.LoadScene("LevelSelect");
+    }
   }
 }

@@ -1,0 +1,32 @@
+{
+  "notes": [
+    { "type": "FrontLeft", "measure": 2, "beat": 1.0, "duration": 1.0 },
+    { "type": "FrontRight", "measure": 3, "beat": 1.0, "duration": 1.0 },
+    { "type": "FrontLeft", "measure": 4, "beat": 1.0, "duration": 1.0 },
+    { "type": "FrontRight", "measure": 5, "beat": 1.0, "duration": 1.0 },
+
+    { "type": "BackLeft", "measure": 6, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackRight", "measure": 7, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackLeft", "measure": 8, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackRight", "measure": 9, "beat": 1.0, "duration": 1.0 },
+
+    { "type": "FrontLeft", "measure": 10, "beat": 1.0, "duration": 1.0 },
+    { "type": "FrontRight", "measure": 11, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackLeft", "measure": 12, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackRight", "measure": 13, "beat": 1.0, "duration": 1.0 },
+
+    { "type": "FrontRight", "measure": 14, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackRight", "measure": 15, "beat": 1.0, "duration": 1.0 },
+    { "type": "FrontLeft", "measure": 16, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackLeft", "measure": 17, "beat": 1.0, "duration": 1.0 },
+
+    { "type": "FrontLeft", "measure": 18, "beat": 1.0, "duration": 4.0 },
+    { "type": "FrontRight", "measure": 20, "beat": 1.0, "duration": 4.0 },
+    { "type": "FrontLeft", "measure": 22, "beat": 1.0, "duration": 4.0 },
+    { "type": "FrontRight", "measure": 23, "beat": 1.0, "duration": 4.0 },
+    { "type": "BackLeft", "measure": 24, "beat": 1.0, "duration": 1.0 },
+    { "type": "BackRight", "measure": 24, "beat": 3.0, "duration": 1.0 },
+    { "type": "FrontLeft", "measure": 25, "beat": 1.0, "duration": 1.0 },
+    { "type": "FrontRight", "measure": 25, "beat": 3.0, "duration": 1.0 }
+  ]
+}

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a1fa6932dc6c429bba29ee7e21d0d8f, type: 3}
+  m_Name: LevelConfigEasy
+  m_EditorClassIdentifier: 
+  difficultyName: Easy
+  song: {fileID: 8300000, guid: 813bef13b5905414ba7a5ea188e26ff8, type: 3}
+  bpm: 100
+  firstBeatOffset: 0
+  showTutorial: 1
+  noteChart: {fileID: 4900000, guid: b461151ab4ada4b0e8d1ee13fb730e5b, type: 3}
+  speedMultiplier: 1
+  timingLeniency: 1
+  cowBounceScoreThreshold: 0
+  scoreTextPulseScoreThreshold: 500
+  streakTextPulseScoreThreshold: 10
+  beatColorScoreThreshold: 1000
+  rainbowScoreTextThreshold: 5000
+  rainbowStreakTextThreshold: 20
