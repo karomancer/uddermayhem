@@ -138,6 +138,7 @@ public class VolumeManager : MonoBehaviour
 
         Button blockerButton = backgroundBlocker.AddComponent<Button>();
         blockerButton.onClick.AddListener(ClosePanel);
+        blockerButton.navigation = new Navigation { mode = Navigation.Mode.None };
 
         // Make it full screen
         RectTransform rt = backgroundBlocker.GetComponent<RectTransform>();
@@ -161,6 +162,7 @@ public class VolumeManager : MonoBehaviour
         // Add button component
         Button button = volumeButton.AddComponent<Button>();
         button.onClick.AddListener(TogglePanel);
+        button.navigation = new Navigation { mode = Navigation.Mode.None };
 
         // Position in top-right corner
         RectTransform rt = volumeButton.GetComponent<RectTransform>();
@@ -227,6 +229,7 @@ public class VolumeManager : MonoBehaviour
         volumeSlider.maxValue = 1f;
         volumeSlider.value = savedVolume;
         volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+        volumeSlider.navigation = new Navigation { mode = Navigation.Mode.None };
 
         RectTransform sliderRt = sliderObj.GetComponent<RectTransform>();
         sliderRt.anchorMin = new Vector2(0, 0.5f);

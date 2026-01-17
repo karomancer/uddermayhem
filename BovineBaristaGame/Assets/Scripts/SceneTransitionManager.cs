@@ -80,9 +80,14 @@ public class SceneTransitionManager : MonoBehaviour
 
     public void TransitionToScene(string sceneName)
     {
+        TransitionToScene(sceneName, 0f);
+    }
+
+    public void TransitionToScene(string sceneName, float delayAfterFade)
+    {
         if (!isTransitioning)
         {
-            StartCoroutine(PlayExitTransition(sceneName));
+            StartCoroutine(PlayExitTransition(sceneName, delayAfterFade));
         }
     }
 
@@ -139,7 +144,7 @@ public class SceneTransitionManager : MonoBehaviour
         OnEnterTransitionComplete?.Invoke();
     }
 
-    private IEnumerator PlayExitTransition(string sceneName)
+    private IEnumerator PlayExitTransition(string sceneName, float delayAfterFade = 0f)
     {
         isTransitioning = true;
 
@@ -180,6 +185,12 @@ public class SceneTransitionManager : MonoBehaviour
             }
 
             yield return null;
+        }
+
+        // Wait additional time (e.g., for SFX to finish)
+        if (delayAfterFade > 0f)
+        {
+            yield return new WaitForSeconds(delayAfterFade);
         }
 
         // Load the new scene

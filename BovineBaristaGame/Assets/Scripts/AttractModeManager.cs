@@ -255,12 +255,20 @@ public class AttractModeManager : MonoBehaviour
 
     private bool DetectAnyInput()
     {
-        // Check keyboard (W/Q/S/A specifically, plus any key)
-        bool keyPressed = Input.GetKeyDown(KeyCode.W) ||
-                          Input.GetKeyDown(KeyCode.Q) ||
-                          Input.GetKeyDown(KeyCode.S) ||
-                          Input.GetKeyDown(KeyCode.A) ||
-                          Input.anyKeyDown;
+        // Check keyboard/gamepad - new input system or legacy fallback
+        bool keyPressed = false;
+        if (InputManager.Instance != null)
+        {
+            keyPressed = InputManager.Instance.AnyGameplayKeyPressed();
+        }
+        else
+        {
+            keyPressed = Input.GetKeyDown(KeyCode.W) ||
+                         Input.GetKeyDown(KeyCode.Q) ||
+                         Input.GetKeyDown(KeyCode.S) ||
+                         Input.GetKeyDown(KeyCode.A) ||
+                         Input.anyKeyDown;
+        }
 
         // Check touch
         bool touchBegan = Input.touchCount > 0 &&

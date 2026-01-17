@@ -237,6 +237,27 @@ public class CupConductor : MonoBehaviour
     debugToneIndex = 0;
   }
 
+  /// <summary>
+  /// Get the beat position of the first note (for tutorial timing calculations)
+  /// </summary>
+  public float GetFirstNoteBeat()
+  {
+    CupNote[] notes = activeNotes ?? DEFAULT_NOTES;
+    if (notes.Length == 0) return 0;
+
+    CupNote firstNote = notes[0];
+    return (firstNote.measure * 4) + firstNote.beat - 1;
+  }
+
+  /// <summary>
+  /// Get the time in seconds until the first cup arrives (from song start)
+  /// </summary>
+  public float GetSecondsUntilFirstCup()
+  {
+    float firstNoteBeat = GetFirstNoteBeat();
+    return firstNoteBeat * SecPerBeat;
+  }
+
   public void Conduct(float songPositionInBeats)
   {
     if (activeNotes == null || cupIndex >= activeNotes.Length)
@@ -253,7 +274,9 @@ public class CupConductor : MonoBehaviour
     float totalBeatNumber = (nextCup.measure * 4) + nextCup.beat - 1;
     // Debug.Log("total beat: " + totalBeatNumber + " songPosition " + songPositionInBeats);
 
-    if (totalBeatNumber <= songPositionInBeats + 1)
+    // Calculate lead time in beats based on travel time in seconds
+    float leadTimeInBeats = TimeToSlideInSeconds / SecPerBeat;
+    if (totalBeatNumber <= songPositionInBeats + leadTimeInBeats)
     {
       cupIndex++;
 

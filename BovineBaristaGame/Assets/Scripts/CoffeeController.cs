@@ -43,7 +43,9 @@ public class CoffeeController : MonoBehaviour
   private float endX;
 
   private bool wasHit = false; // Track if cup was interacted with
-  private bool hasBeenProcessed = false; // Prevent multiple collision processing
+  private bool hasBeenProcessed = false; // Prevent multiple entry processing
+  private bool hasExitBeenProcessed = false; // Prevent multiple exit processing
+  private float entryTime = -1f; // Track when entry happened for minimum hold validation
 
   public void init(string _cupTag, int _measure, float _beatInMeasure, float _duration, float _scale)
   {
@@ -106,7 +108,9 @@ public class CoffeeController : MonoBehaviour
 
     endX = CupConductor.CupTagEndVector[cupTag].x;
 
-    Invoke("Serve", CupConductor.SecPerBeat + duration);
+    // Wait for cup to arrive (1 beat) + hold duration (in beats) + linger time (0.5 beats) before sliding away
+    float lingerBeats = 0.5f;  // Extra beats to show completed cup
+    Invoke("Serve", CupConductor.SecPerBeat * (1 + duration + lingerBeats));
   }
 
   void Update()
@@ -137,7 +141,9 @@ public class CoffeeController : MonoBehaviour
 
         TeatController teatController = other.gameObject.GetComponent<TeatController>();
         float inputTime = teatController.songPositionAtPress;
-        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure, inputTime);
+        entryTime = inputTime; // Track entry time for hold validation
+        // Score on entry but don't affect streak - streak only changes on release
+        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure, inputTime, affectStreak: false);
 
         // Adjust delay to account for time elapsed since actual input
         float timeSincePress = (gameManager.songPositionInBeats - inputTime) * CupConductor.SecPerBeat;
@@ -173,11 +179,23 @@ public class CoffeeController : MonoBehaviour
     if (other.gameObject.tag == "Teat")
     {
       string otherType = other.gameObject.name.Split("_")[1];
-      float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
-      if (otherType == cupTag && currentState != CupState.TippedOver)
+      if (otherType == cupTag && currentState != CupState.TippedOver && !hasExitBeenProcessed)
       {
+        hasExitBeenProcessed = true; // Prevent re-processing exit
         TeatController teatController = other.gameObject.GetComponent<TeatController>();
         float inputTime = teatController.songPositionAtRelease;
+
+        // Check minimum hold duration - must hold for at least half the expected duration
+        float minimumHoldBeats = duration * 0.5f;
+        float actualHoldBeats = inputTime - entryTime;
+        if (actualHoldBeats < minimumHoldBeats)
+        {
+          // Released too quickly - treat as failed
+          ChangeSpriteToTippedOver();
+          gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime); // Still score, but will be TooEarly
+          return;
+        }
+
         BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime);
         if (timing == BeatTiming.OnTime)
         {

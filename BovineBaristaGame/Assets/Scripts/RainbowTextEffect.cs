@@ -1,8 +1,19 @@
 using UnityEngine;
 using TMPro;
 
+public enum RainbowTargetType
+{
+    ScoreText,
+    StreakText,
+    Custom  // Uses Inspector values, ignores LevelConfig
+}
+
 public class RainbowTextEffect : MonoBehaviour
 {
+    [Header("Target Type")]
+    [Tooltip("Which LevelConfig threshold to use for this object")]
+    public RainbowTargetType targetType = RainbowTargetType.Custom;
+
     [Header("Activation")]
     [Tooltip("Score required to activate rainbow effect (0 = always active)")]
     public int scoreThreshold = 5000;
@@ -43,6 +54,20 @@ public class RainbowTextEffect : MonoBehaviour
         textComponent = GetComponent<TMP_Text>();
         gameManager = FindObjectOfType<GameManager>();
 
+        // Override threshold from level config if available
+        if (GameManager.currentLevelConfig != null && targetType != RainbowTargetType.Custom)
+        {
+            switch (targetType)
+            {
+                case RainbowTargetType.ScoreText:
+                    scoreThreshold = GameManager.currentLevelConfig.rainbowScoreTextThreshold;
+                    break;
+                case RainbowTargetType.StreakText:
+                    scoreThreshold = GameManager.currentLevelConfig.rainbowStreakTextThreshold;
+                    break;
+            }
+        }
+
         Debug.Log($"RainbowTextEffect Start: gameManager={(gameManager != null ? "FOUND" : "NULL")}, threshold={scoreThreshold}");
 
         if (textComponent != null)
@@ -60,8 +85,12 @@ public class RainbowTextEffect : MonoBehaviour
         if (textComponent == null) return;
 
         int currentScore = gameManager != null ? gameManager.CurrentScore : 0;
+        int currentStreak = gameManager != null ? gameManager.CurrentStreak : 0;
 
-        bool shouldBeActive = currentScore >= scoreThreshold;
+        // For StreakText, use streak count instead of score for threshold
+        int checkValue = (targetType == RainbowTargetType.StreakText) ? currentStreak : currentScore;
+
+        bool shouldBeActive = checkValue >= scoreThreshold;
 
         // Debug: log when state changes
         if (shouldBeActive && !isActive)

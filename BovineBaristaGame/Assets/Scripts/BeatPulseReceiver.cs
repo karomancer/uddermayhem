@@ -3,8 +3,20 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+public enum PulseTargetType
+{
+    Cow,
+    ScoreText,
+    StreakText,
+    Custom  // Uses Inspector values, ignores LevelConfig
+}
+
 public class BeatPulseReceiver : MonoBehaviour
 {
+    [Header("Target Type")]
+    [Tooltip("Which LevelConfig threshold to use for this object")]
+    public PulseTargetType targetType = PulseTargetType.Custom;
+
     [Header("Pulse Settings")]
     [Tooltip("Base scale multiplier for pulse (1.01 = 1% larger)")]
     public float baseScale = 1.01f;
@@ -59,6 +71,24 @@ public class BeatPulseReceiver : MonoBehaviour
         if (tmpText != null) originalColor = tmpText.color;
         else if (spriteRenderer != null) originalColor = spriteRenderer.color;
         else if (image != null) originalColor = image.color;
+
+        // Override thresholds from level config if available
+        if (GameManager.currentLevelConfig != null && targetType != PulseTargetType.Custom)
+        {
+            switch (targetType)
+            {
+                case PulseTargetType.Cow:
+                    pulseScoreThreshold = GameManager.currentLevelConfig.cowBounceScoreThreshold;
+                    break;
+                case PulseTargetType.ScoreText:
+                    pulseScoreThreshold = GameManager.currentLevelConfig.scoreTextPulseScoreThreshold;
+                    break;
+                case PulseTargetType.StreakText:
+                    pulseScoreThreshold = GameManager.currentLevelConfig.streakTextPulseScoreThreshold;
+                    break;
+            }
+            colorScoreThreshold = GameManager.currentLevelConfig.beatColorScoreThreshold;
+        }
     }
 
     void OnEnable()
@@ -76,6 +106,10 @@ public class BeatPulseReceiver : MonoBehaviour
         beatCount++;
 
         int currentScore = gameManager != null ? gameManager.CurrentScore : 0;
+        int currentStreak = gameManager != null ? gameManager.CurrentStreak : 0;
+
+        // For StreakText, use streak count instead of score for threshold
+        int pulseCheckValue = (targetType == PulseTargetType.StreakText) ? currentStreak : currentScore;
 
         // Handle color rotation
         if (colors != null && colors.Length > 0 && currentScore >= colorScoreThreshold)
@@ -91,7 +125,7 @@ public class BeatPulseReceiver : MonoBehaviour
         if (beatCount % beatsPerPulse != 0) return;
         if (intensity < minimumIntensity) return;
         if (isPulsing) return;
-        if (currentScore < pulseScoreThreshold) return;
+        if (pulseCheckValue < pulseScoreThreshold) return;
 
         StartCoroutine(Pulse(intensity));
     }

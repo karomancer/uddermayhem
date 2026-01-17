@@ -28,4 +28,23 @@ public class LevelConfig : ScriptableObject
 
     [Tooltip("How forgiving the timing windows are (1 = normal, higher = easier)")]
     public float timingLeniency = 1f;
+
+    [Header("Visual Effect Thresholds")]
+    [Tooltip("Score required before cow bouncing starts (0 = always bounce)")]
+    public int cowBounceScoreThreshold = 0;
+
+    [Tooltip("Score required before score text pulsing starts (0 = always pulse)")]
+    public int scoreTextPulseScoreThreshold = 0;
+
+    [Tooltip("Streak count required before streak text pulsing starts (0 = always pulse)")]
+    public int streakTextPulseScoreThreshold = 0;
+
+    [Tooltip("Score required before beat color rotation starts (0 = always rotate)")]
+    public int beatColorScoreThreshold = 0;
+
+    [Tooltip("Score required to activate rainbow effect on score text (0 = always active)")]
+    public int rainbowScoreTextThreshold = 5000;
+
+    [Tooltip("Streak count required to activate rainbow effect on streak text (0 = always active)")]
+    public int rainbowStreakTextThreshold = 0;
 }

@@ -228,7 +228,20 @@ public class TitleSceneController : MonoBehaviour
       }
     }
 
-    bool keyPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A);
+    // Check for any key press - new input system or legacy fallback
+    bool keyPressed = false;
+    if (InputManager.Instance != null)
+    {
+      // Gameplay keys (W/Q/A/S, gamepad teat buttons) or Submit (Enter/Space, gamepad A)
+      keyPressed = InputManager.Instance.AnyGameplayKeyPressed() ||
+                   InputManager.Instance.Submit.WasPressedThisFrame();
+    }
+    else
+    {
+      keyPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Q) ||
+                   Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A) ||
+                   Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space);
+    }
 
     // Check touch/mouse input but ignore if over UI elements (like volume slider)
     bool touchBegan = Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began;

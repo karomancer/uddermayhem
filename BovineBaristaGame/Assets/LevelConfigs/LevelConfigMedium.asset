@@ -20,3 +20,9 @@ MonoBehaviour:
   noteChart: {fileID: 4900000, guid: 8f2fe416bb23141b9909ded5faa7082d, type: 3}
   speedMultiplier: 1
   timingLeniency: 1
+  cowBounceScoreThreshold: 0
+  scoreTextPulseScoreThreshold: 2500
+  streakTextPulseScoreThreshold: 20
+  beatColorScoreThreshold: 5000
+  rainbowScoreTextThreshold: 5000
+  rainbowStreakTextThreshold: 40

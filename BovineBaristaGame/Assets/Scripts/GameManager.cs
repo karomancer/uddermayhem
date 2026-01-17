@@ -48,6 +48,19 @@ public class GameManager : MonoBehaviour
 
   public TMP_Text ScoreText;
   public TMP_Text StreakText; // Optional UI for streak display
+
+  [Header("Countdown")]
+  public TMP_Text CountdownText; // UI text for "3, 2, 1, MILK!" countdown
+  private float firstNoteBeat = -1f;
+  private int lastCountdownShown = -1; // Track which countdown we last showed to avoid re-triggering
+  private string[] countdownTexts = { "3", "2", "1", "MILK!" };
+  private Vector3 countdownOriginalScale;
+  private Coroutine countdownAnimCoroutine;
+  [Tooltip("Duration of countdown spiral animation in seconds")]
+  public float countdownAnimDuration = 0.2f;
+  [Tooltip("Number of rotations during spiral animation")]
+  public float countdownSpinRotations = 0.5f;
+
   private float currentScore = 0;
   public int CurrentScore => (int)currentScore;
   private int OnTimeScore = 0;
@@ -60,9 +73,11 @@ public class GameManager : MonoBehaviour
   public int CurrentStreak => currentStreak;
   public int MaxStreak => maxStreak;
 
-  // Multiplier tiers
-  private int[] streakTiers = { 0, 10, 25, 50 };
-  private int[] multipliers = { 1, 2, 3, 4 };
+  [Header("Streak Multipliers")]
+  [Tooltip("Streak counts at which multiplier increases (must match multipliers array length)")]
+  public int[] streakTiers = { 0, 10, 25, 50 };
+  [Tooltip("Score multiplier for each tier (must match streakTiers array length)")]
+  public int[] multipliers = { 1, 2, 3, 4 };
 
   private bool keysAreDisabled = true;
   private bool goingToTitleScreen = false;
@@ -81,6 +96,18 @@ public class GameManager : MonoBehaviour
   {
     dspSongTime = (float)AudioSettings.dspTime;
     ScoreText.text = "";
+    if (CountdownText != null)
+    {
+      CountdownText.text = "";
+      countdownOriginalScale = CountdownText.transform.localScale;
+    }
+
+    // Get first note beat for countdown timing
+    if (cupConductor != null)
+    {
+      firstNoteBeat = cupConductor.GetFirstNoteBeat();
+      Debug.Log($"First note at beat {firstNoteBeat}, countdown starts at beat {firstNoteBeat - 4}");
+    }
   }
 
   private void ApplyLevelConfig()
@@ -140,6 +167,9 @@ public class GameManager : MonoBehaviour
       songPositionInBeats = songPosition / CupConductor.SecPerBeat;
       // Debug.Log(songPositionInBeats);
 
+      // Update countdown display
+      UpdateCountdown();
+
       if (shouldShowScore) {
         double tips = currentScore / 100.0;
         ScoreText.text = $"Tip jar: ${tips:F2}";
@@ -164,19 +194,93 @@ public class GameManager : MonoBehaviour
     shouldShowScore = true;
   }
 
-  public void SkipToSong() {
-    ShowScore();
-    StartSong((float)AudioSettings.dspTime);
+  private void UpdateCountdown()
+  {
+    if (CountdownText == null || firstNoteBeat < 0) return;
+
+    float countdownStart = firstNoteBeat - 4;
+    float countdownEnd = firstNoteBeat;
+
+    // Before countdown starts or after it ends
+    if (songPositionInBeats < countdownStart || songPositionInBeats >= countdownEnd)
+    {
+      if (lastCountdownShown >= 0)
+      {
+        // Stop any running animation and hide
+        if (countdownAnimCoroutine != null) StopCoroutine(countdownAnimCoroutine);
+        CountdownText.text = "";
+        CountdownText.transform.localScale = countdownOriginalScale;
+        CountdownText.transform.rotation = Quaternion.identity;
+        lastCountdownShown = -1;
+      }
+      return;
+    }
+
+    // Determine which countdown index we're on (0="3", 1="2", 2="1", 3="MILK!")
+    int countdownIndex = Mathf.FloorToInt(songPositionInBeats - countdownStart);
+    countdownIndex = Mathf.Clamp(countdownIndex, 0, countdownTexts.Length - 1);
+
+    // Only update if we're showing a new countdown number
+    if (countdownIndex != lastCountdownShown)
+    {
+      // Stop previous animation if running
+      if (countdownAnimCoroutine != null) StopCoroutine(countdownAnimCoroutine);
+
+      CountdownText.text = countdownTexts[countdownIndex];
+      lastCountdownShown = countdownIndex;
+      Debug.Log($"Countdown: {countdownTexts[countdownIndex]} at beat {songPositionInBeats}");
+
+      // Start spiral animation
+      countdownAnimCoroutine = StartCoroutine(AnimateCountdownSpiral());
+    }
   }
 
-  public void StartSong(float startTime) {
+  private IEnumerator AnimateCountdownSpiral()
+  {
+    Transform t = CountdownText.transform;
+    float elapsed = 0f;
+
+    // Start at scale 0 and rotated
+    float startRotation = countdownSpinRotations * 360f;
+
+    while (elapsed < countdownAnimDuration)
+    {
+      elapsed += Time.deltaTime;
+      float progress = elapsed / countdownAnimDuration;
+
+      // Ease out for snappy feel
+      float easedProgress = 1f - Mathf.Pow(1f - progress, 3f);
+
+      // Scale from 0 to original
+      t.localScale = countdownOriginalScale * easedProgress;
+
+      // Rotate from startRotation to 0
+      float currentRotation = Mathf.Lerp(startRotation, 0f, easedProgress);
+      t.rotation = Quaternion.Euler(0f, 0f, currentRotation);
+
+      yield return null;
+    }
+
+    // Ensure final state
+    t.localScale = countdownOriginalScale;
+    t.rotation = Quaternion.identity;
+    countdownAnimCoroutine = null;
+  }
+
+  public void SkipToSong() {
+    ShowScore();
+    StartSong();
+  }
+
+  public void StartSong(float startTime = -1f) {
     Debug.Log($"StartSong called. Clip: {music.clip?.name}, Length: {music.clip?.length}");
     music.Play();
-    dspSongTime = startTime;
+    // Capture dspTime right after Play() for accurate sync
+    dspSongTime = (startTime < 0) ? (float)AudioSettings.dspTime : startTime;
     keysAreDisabled = false;
     musicIsPlaying = true;
     Invoke("songIsOver", music.clip.length);
-    Debug.Log($"Music isPlaying: {music.isPlaying}");
+    Debug.Log($"Music isPlaying: {music.isPlaying}, dspSongTime: {dspSongTime}");
   }
 
   void songIsOver() {
@@ -203,6 +307,11 @@ public class GameManager : MonoBehaviour
 
   public void SubmitCustomerFeedback(BeatTiming bt)
   {
+    SubmitCustomerFeedback(bt, affectStreak: true);
+  }
+
+  public void SubmitCustomerFeedback(BeatTiming bt, bool affectStreak)
+  {
     int baseScore = 0;
     bool isHit = false;
 
@@ -224,7 +333,7 @@ public class GameManager : MonoBehaviour
         isHit = true;
         break;
       case BeatTiming.Miss:
-        ResetStreak();
+        if (affectStreak) ResetStreak();
         return;
       default:
         break;
@@ -232,7 +341,7 @@ public class GameManager : MonoBehaviour
 
     if (isHit)
     {
-      IncrementStreak();
+      if (affectStreak) IncrementStreak();
       int multiplier = GetMultiplier();
       currentScore += baseScore * multiplier;
       OnScoreChanged?.Invoke((int)currentScore, multiplier);
@@ -262,6 +371,14 @@ public class GameManager : MonoBehaviour
 
   private int GetMultiplier()
   {
+    // Safeguard: if arrays are empty or mismatched, return 1x
+    if (streakTiers == null || multipliers == null ||
+        streakTiers.Length == 0 || multipliers.Length == 0 ||
+        streakTiers.Length != multipliers.Length)
+    {
+      return 1;
+    }
+
     int multiplier = multipliers[0];
     for (int i = streakTiers.Length - 1; i >= 0; i--)
     {
@@ -329,23 +446,28 @@ public class GameManager : MonoBehaviour
 
   public BeatTiming IsOnBeat(int measure, float beat, float inputSongPosition)
   {
+    return IsOnBeat(measure, beat, inputSongPosition, affectStreak: true);
+  }
+
+  public BeatTiming IsOnBeat(int measure, float beat, float inputSongPosition, bool affectStreak)
+  {
     float expectedSongPosition = (measure * 4) + beat - 1;
     bool isAcceptablyEarly = inputSongPosition > (expectedSongPosition - beatAllowance);
     bool isAcceptablyLate = inputSongPosition < (expectedSongPosition + beatAllowance);
     Debug.Log("Expected " + expectedSongPosition + " Got: " + inputSongPosition);
     if (isAcceptablyEarly && isAcceptablyLate)
     {
-      SubmitCustomerFeedback(BeatTiming.OnTime);
+      SubmitCustomerFeedback(BeatTiming.OnTime, affectStreak);
       return BeatTiming.OnTime;
     }
 
     if (!isAcceptablyLate)
     {
-      SubmitCustomerFeedback(BeatTiming.TooLate);
+      SubmitCustomerFeedback(BeatTiming.TooLate, affectStreak);
       return BeatTiming.TooLate;
     }
 
-    SubmitCustomerFeedback(BeatTiming.TooEarly);
+    SubmitCustomerFeedback(BeatTiming.TooEarly, affectStreak);
     return BeatTiming.TooEarly;
   }
 }
