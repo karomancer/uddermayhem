@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // JSON parsing classes
@@ -51,6 +52,18 @@ public class CupConductor : MonoBehaviour
   [Tooltip("In a dense lane, how many beats before the next cup lands the previous one starts leaving")]
   public float departClearanceBeats = 0.25f;
   public float cupScale = 0.558664f;
+
+  [Header("Milk Stream")]
+  [Tooltip("Stream frames cycled while pouring; leave empty to load Resources/Stream")]
+  public Sprite[] streamFrames;
+  [Tooltip("Stream art scale relative to the teat it pours from")]
+  public float streamScale = 0.5f;
+  [Tooltip("How many stream frames advance per beat")]
+  public float streamFramesPerBeat = 2f;
+  [Tooltip("With no cup in the lane, milk lands at the lane's cup height, this much lower (negative = higher)")]
+  public float streamFloorOffset = 0f;
+  [Tooltip("How far up inside the teat the stream starts, in world units, so its top is hidden behind the tip")]
+  public float streamInset = 0.25f;
 
   [Header("Lanes")]
   [Tooltip("Where cups stop, indexed by TeatPosition; unassigned lanes fall back to CupTagEndVector")]
@@ -196,6 +209,18 @@ public class CupConductor : MonoBehaviour
     {TeatPosition.BackLeft, new Vector3(-3.5646f, -1.27f, 0f)},
     {TeatPosition.BackRight, new Vector3(1.13f, -1.27f, 0f)}
   };
+
+  public Sprite[] StreamFrames
+  {
+    get
+    {
+      if (streamFrames == null || streamFrames.Length == 0)
+      {
+        streamFrames = Resources.LoadAll<Sprite>("Stream").OrderBy(sprite => sprite.name).ToArray();
+      }
+      return streamFrames;
+    }
+  }
 
   private readonly List<Note> notes = new List<Note>();
   public IReadOnlyList<Note> Notes => notes;
@@ -412,7 +437,7 @@ public class CupConductor : MonoBehaviour
     newCup.GetComponent<CoffeeController>().Bind(entry, gameManager, this, anchor);
   }
 
-  private Vector3 AnchorFor(TeatPosition lane)
+  public Vector3 AnchorFor(TeatPosition lane)
   {
     int index = (int)lane;
     Transform anchor = (laneAnchors != null && index < laneAnchors.Length) ? laneAnchors[index] : null;

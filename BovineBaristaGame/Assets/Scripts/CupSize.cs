@@ -42,6 +42,8 @@ public class CupSize : ScriptableObject
     [Header("Fill")]
     [Tooltip("Visible fill steps across the hold; the liquid jumps between them on beat subdivisions")]
     public int fillSteps = 2;
+    [Tooltip("Surface centre x, in sprite units (artboard px from centre / PPU); where the milk stream lands")]
+    public float surfaceCenterX = 0f;
     [Tooltip("Surface centre y when full, in sprite units (artboard px from centre / PPU)")]
     public float surfaceFullY = 0f;
     [Tooltip("Surface centre y for the resting cup (the espresso shot showing at the lip before any milk)")]

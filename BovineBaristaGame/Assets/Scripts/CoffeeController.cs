@@ -107,6 +107,7 @@ public class CoffeeController : MonoBehaviour
         SetLayersVisible(false);
         renderer.enabled = true;
         renderer.sprite = wholeCup;
+        UpdateStream(false, size, beat);
       }
       else
       {
@@ -210,6 +211,32 @@ public class CoffeeController : MonoBehaviour
       && beat > note.endBeat + gameManager.Judge.ReleasePerfectBeats;
     layers.latte.enabled = perfect;
     layers.overflow.enabled = overfilled || holdingPastPerfect;
+
+    UpdateStream(note.state == NoteState.Holding, size, beat);
+  }
+
+  // While the note is held, tell the lane's teat how far down the liquid surface is so its milk stops there
+  private void UpdateStream(bool pouring, CupSize size, float beat)
+  {
+    TeatController teat = TeatController.ForLane(schedule.note.lane);
+    if (teat == null) return;
+
+    if (pouring)
+    {
+      Vector3 surface = layers.surface.transform.TransformPoint(new Vector3(size.surfaceCenterX, size.surfaceFullY, 0f));
+      teat.SetPourTarget(this, surface.y);
+    }
+    else
+    {
+      teat.ClearPourTarget(this);
+    }
+  }
+
+  void OnDestroy()
+  {
+    if (schedule == null) return;
+    TeatController teat = TeatController.ForLane(schedule.note.lane);
+    if (teat != null) teat.ClearPourTarget(this);
   }
 
   private void SetLayersVisible(bool visible)
