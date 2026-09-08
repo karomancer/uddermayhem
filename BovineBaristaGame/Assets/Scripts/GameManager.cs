@@ -165,7 +165,7 @@ public class GameManager : MonoBehaviour
 
       if (shouldShowScore) {
         double tips = currentScore / 100.0;
-        ScoreText.text = $"Tip jar: ${tips:F2}";
+        ScoreText.text = $"${tips:F2}";
       }
 
       Judge?.Tick(songPositionInBeats);

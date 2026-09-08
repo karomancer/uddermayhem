@@ -40,6 +40,19 @@ public class AutoplaySmokeTests
         yield return SceneManager.LoadSceneAsync("Main");
         SceneManager.sceneLoaded -= ForceAutoPlay;
         AudioListener.volume = 0f;
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("UDDER_SMOKE_SHOTS")))
+        {
+            // Overlay canvases are invisible to Camera.Render; move them in front of the camera so captures include the HUD
+            foreach (var canvas in UnityEngine.Object.FindObjectsOfType<Canvas>())
+            {
+                if (canvas.renderMode != RenderMode.ScreenSpaceOverlay) continue;
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = Camera.main;
+                canvas.planeDistance = 1f;
+                canvas.sortingLayerName = "UI";
+                canvas.sortingOrder = 100;
+            }
+        }
 
         var gameManagerObject = GameObject.Find("GameManager");
         var gameManager = gameManagerObject.GetComponent(GameManagerType);
@@ -59,6 +72,7 @@ public class AutoplaySmokeTests
         var shotDone = new HashSet<Note>();
         var shotExit = new HashSet<Note>();
         bool emptySqueezeShot = false;
+        bool hudShot = false;
         while (beat < TargetBeat)
         {
             Assert.Less(Time.realtimeSinceStartup, deadline,
@@ -67,6 +81,20 @@ public class AutoplaySmokeTests
             maxCupsSeen = Math.Max(maxCupsSeen, UnityEngine.Object.FindObjectsOfType(CupViewType).Length);
             if (!string.IsNullOrEmpty(screenshotDir))
             {
+                if (beat >= 9f && !hudShot)
+                {
+                    yield return Capture(System.IO.Path.Combine(screenshotDir, "hud.png"));
+                    hudShot = true;
+                    var scoreText = (Component)GameManagerType.GetField("ScoreText").GetValue(gameManager);
+                    string scoreString = (string)scoreText.GetType().GetProperty("text").GetValue(scoreText);
+                    var rt = scoreText.GetComponent<RectTransform>(); var c = new Vector3[4]; rt.GetWorldCorners(c);
+                    var canvas = rt.GetComponentInParent<Canvas>();
+                    Camera uiCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                    Debug.Log($"[HUD] screen {Screen.width}x{Screen.height} canvas mode {canvas.renderMode} scale {canvas.scaleFactor} text '{scoreString}' rect {rt.rect.size} lossyScale {rt.lossyScale} corners(screen) BL {RectTransformUtility.WorldToScreenPoint(uiCam, c[0])} TL {RectTransformUtility.WorldToScreenPoint(uiCam, c[1])} TR {RectTransformUtility.WorldToScreenPoint(uiCam, c[2])}");
+                    var jar = GameObject.Find("TipJar");
+                    Debug.Log($"[HUD] jar pos {jar?.transform.position} scale {jar?.transform.localScale} cam {Camera.main.transform.position} ortho {Camera.main.orthographicSize} pixelRect {Camera.main.pixelRect}");
+                }
+
                 // Squeeze an empty lane once so the no-cup stream can be seen (BackRight has no cup before beat 13)
                 if (beat >= 10f && beat < 10.6f && !emptySqueezeShot)
                 {
@@ -75,7 +103,7 @@ public class AutoplaySmokeTests
                     TeatType.GetMethod("SetSqueezing").Invoke(teat, new object[] { true });
                     if (beat >= 10.3f)
                     {
-                        Capture(System.IO.Path.Combine(screenshotDir, "empty_lane_squeeze.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, "empty_lane_squeeze.png"));
                         TeatType.GetMethod("SetSqueezing").Invoke(teat, new object[] { false });
                         emptySqueezeShot = true;
                     }
@@ -86,17 +114,17 @@ public class AutoplaySmokeTests
                 {
                     if (n.HoldBeats < 1f) continue;
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 1.0f && shotEnter.Add(n))
-                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))
-                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_stasis.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_stasis.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.12f && shotPickup.Add(n))
-                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_pickup.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_pickup.png"));
                     if (n.state == NoteState.Holding && beat >= n.pressBeat + n.HoldBeats * 0.5f && shotHalf.Add(n))
-                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_half.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_half.png"));
                     if (n.state == NoteState.Done && beat >= n.endBeat + 0.2f && shotDone.Add(n))
-                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_done.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_done.png"));
                     if (n.state == NoteState.Done && beat >= n.endBeat + 0.7f && shotExit.Add(n))
-                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_exit.png"));
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_exit.png"));
                 }
             }
             yield return null;
@@ -121,13 +149,36 @@ public class AutoplaySmokeTests
         Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}");
     }
 
-    private static void Capture(string path)
+    // Captures at every size in UDDER_SMOKE_SIZE ("1280x720,1692x772"), else at the batchmode screen size.
+    // The camera renders to a texture of that size for one frame first, so the UI lays itself out for it.
+    private static IEnumerator Capture(string path)
+    {
+        var sizes = new List<Vector2Int>();
+        string spec = Environment.GetEnvironmentVariable("UDDER_SMOKE_SIZE");
+        if (!string.IsNullOrEmpty(spec))
+            foreach (string s in spec.Split(','))
+            {
+                string[] wh = s.Trim().Split('x');
+                sizes.Add(new Vector2Int(int.Parse(wh[0]), int.Parse(wh[1])));
+            }
+        if (sizes.Count == 0) sizes.Add(new Vector2Int(Screen.width, Screen.height));
+
+        foreach (Vector2Int size in sizes)
+        {
+            string file = sizes.Count > 1 ? path.Replace(".png", $"_{size.x}x{size.y}.png") : path;
+            yield return CaptureAt(file, size.x, size.y);
+        }
+    }
+
+    private static IEnumerator CaptureAt(string path, int width, int height)
     {
         Camera camera = Camera.main;
-        const int width = 1280, height = 720;
         var target = new RenderTexture(width, height, 24);
         RenderTexture previousTarget = camera.targetTexture;
         camera.targetTexture = target;
+        // Frame 1: CanvasScaler.Update picks up the new size; frame 2: LateUpdate placement (TipJar) uses it
+        yield return null;
+        yield return null;
         camera.Render();
         camera.targetTexture = previousTarget;
 
