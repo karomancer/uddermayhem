@@ -53,6 +53,7 @@ public class AutoplaySmokeTests
         string screenshotDir = Environment.GetEnvironmentVariable("UDDER_SMOKE_SHOTS");
         var shotEnter = new HashSet<Note>();
         var shotStasis = new HashSet<Note>();
+        var shotPickup = new HashSet<Note>();
         var shotHalf = new HashSet<Note>();
         var shotDone = new HashSet<Note>();
         var shotExit = new HashSet<Note>();
@@ -72,6 +73,8 @@ public class AutoplaySmokeTests
                         Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))
                         Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_stasis.png"));
+                    if (n.state == NoteState.Pending && beat >= n.startBeat - 0.12f && shotPickup.Add(n))
+                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_pickup.png"));
                     if (n.state == NoteState.Holding && beat >= n.pressBeat + n.HoldBeats * 0.5f && shotHalf.Add(n))
                         Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_half.png"));
                     if (n.state == NoteState.Done && beat >= n.endBeat + 0.2f && shotDone.Add(n))

@@ -44,6 +44,10 @@ public class CupConductor : MonoBehaviour
   public float exitBeats = 0.5f;
   [Tooltip("How many beats a finished cup stays before leaving")]
   public float lingerBeats = 0.5f;
+  [Tooltip("Beats before the hit at which the cup switches to its pickup frame")]
+  public float pickupStartBeatsBeforeHit = 0.375f;
+  [Tooltip("Beats before the hit at which the pickup frame ends (0 = holds until the hit)")]
+  public float pickupEndBeatsBeforeHit = 0f;
   [Tooltip("In a dense lane, how many beats before the next cup lands the previous one starts leaving")]
   public float departClearanceBeats = 0.25f;
   public float cupScale = 0.558664f;

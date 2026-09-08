@@ -3,14 +3,6 @@ using UnityEngine;
 /// <summary>
 /// Cup art for one hold length. Create via: Right-click → Create → BovineBarista → Cup Size
 /// </summary>
-[System.Serializable]
-public struct PreHitFrame
-{
-    public Sprite sprite;
-    [Tooltip("How long this frame shows, in beats")]
-    public float beats;
-}
-
 [CreateAssetMenu(fileName = "CupSize", menuName = "BovineBarista/Cup Size")]
 public class CupSize : ScriptableObject
 {
@@ -44,8 +36,8 @@ public class CupSize : ScriptableObject
     [Header("Whole-Cup Motion Frames (optional)")]
     [Tooltip("Shown while the cup slides in from the barista")]
     public Sprite slideInCup;
-    [Tooltip("Whole-cup frames leading into the hit, in order; the last one ends exactly on the hit. Leave empty to show the resting cup from arrival until the hit")]
-    public PreHitFrame[] preHitFrames;
+    [Tooltip("Shown between CupConductor.pickupStartBeatsBeforeHit and pickupEndBeatsBeforeHit, then the resting cup returns for the hit")]
+    public Sprite pickupCup;
 
     [Header("Fill")]
     [Tooltip("Visible fill steps across the hold; the liquid jumps between them on beat subdivisions")]
@@ -62,21 +54,6 @@ public class CupSize : ScriptableObject
     public Gradient liquidTint = EspressoToLatte();
     [Tooltip("Surface colour multiplier by fill level; white keeps the art's own colours")]
     public Gradient surfaceTint = DarkToUnchanged();
-
-    // Frames are anchored to the hit, so the sequence's end lands on the beat whatever the arrival time
-    public Sprite PreHitFrameAt(float beatsBeforeHit)
-    {
-        if (preHitFrames == null || beatsBeforeHit < 0f) return null;
-
-        float end = 0f;
-        for (int i = preHitFrames.Length - 1; i >= 0; i--)
-        {
-            float start = end + preHitFrames[i].beats;
-            if (beatsBeforeHit >= end && beatsBeforeHit < start) return preHitFrames[i].sprite;
-            end = start;
-        }
-        return null;
-    }
 
     public bool HasLayers =>
         glassBack != null && interiorMask != null && liquidSurface != null && glassFront != null;

@@ -120,17 +120,20 @@ public class CoffeeController : MonoBehaviour
     }
   }
 
-  // Whole-cup frames: slide in until arrival, then any pre-hit frames counted back from the hit (the
-  // layered resting cup fills the gap); from the hit on the layered cup fills and shows its result;
-  // a tipped cup stays tipped
+  // Whole-cup frames: slide in until arrival, the pickup frame in its window before the hit, and the
+  // layered cup otherwise (resting, filling, showing its result); a tipped cup stays tipped
   private Sprite WholeCupSpriteFor(Note note, CupSize size, float beat)
   {
     bool done = note.state == NoteState.Done;
     bool tipped = done && note.releaseJudgment != BeatTiming.OnTime && note.releaseJudgment != BeatTiming.TooLate;
     if (tipped) return size.tippedCup;
     if (note.state != NoteState.Pending) return null;
+
+    float beatsBeforeHit = note.startBeat - beat;
+    bool inPickupWindow = beatsBeforeHit <= conductor.pickupStartBeatsBeforeHit && beatsBeforeHit > conductor.pickupEndBeatsBeforeHit;
+    if (inPickupWindow && size.pickupCup != null) return size.pickupCup;
     if (beat < schedule.arriveBeat) return size.slideInCup;
-    return size.PreHitFrameAt(note.startBeat - beat);
+    return null;
   }
 
   private void BuildLayers(CupSize size)

@@ -28,6 +28,7 @@ MonoBehaviour:
   latteArt: {fileID: 21300000, guid: e3b3c352d3e94ef396a5321e92a5ad3e, type: 3}
   glassFront: {fileID: 21300000, guid: a3f9d56b2e5849488d6ee8ef64f7da44, type: 3}
   slideInCup: {fileID: 21300000, guid: bec02649d2ce4c3e9b29fc762da4167e, type: 3}
+  pickupCup: {fileID: 21300000, guid: 8085a64e8e784187a745ea223d42a884, type: 3}
   overflow: {fileID: 21300000, guid: 765247b6a46f4a4b9e8c18e9cb2a03d6, type: 3}
   fillSteps: 2
   surfaceFullY: 2.155
