@@ -12,6 +12,8 @@ public class CupSize : ScriptableObject
     public float arriveLeadBeatsOverride = 0f;
     [Tooltip("Extra scale for this size's art on top of CupConductor.cupScale")]
     public float scaleMultiplier = 1f;
+    [Tooltip("Where the cup's foot sits in the art, in sprite units from the artboard centre (negative = below); 0 = centre the art on the lane anchor")]
+    public float footY = 0f;
 
     [Header("Single-Sprite Frames (used when no layers are assigned)")]
     public Sprite defaultCup;
@@ -48,8 +50,10 @@ public class CupSize : ScriptableObject
     public float surfaceFullY = 0f;
     [Tooltip("Surface centre y for the resting cup (the espresso shot showing at the lip before any milk)")]
     public float surfaceEmptyY = 0f;
-    [Tooltip("Surface x scale at level 0, for bowls narrower at the bottom")]
-    public float surfaceScaleAtBottom = 1f;
+    [Tooltip("Surface x scale by fill level, evenly spaced from level 0 to 1 (empty = 1 everywhere); measured from the interior width so the ellipse always meets the walls")]
+    public float[] surfaceScaleByLevel;
+    [Tooltip("Shifts the liquid body relative to the surface, in sprite units, so its crest tucks under the ellipse")]
+    public float liquidBodyOffsetY = 0f;
     [Tooltip("Clip the surface to the interior too (hides its edges if it is wider than the bowl)")]
     public bool clipSurfaceToInterior = false;
     [Tooltip("Body colour by fill level (0 = first drop, 1 = full); body art should be white or grey")]
@@ -59,6 +63,16 @@ public class CupSize : ScriptableObject
 
     public bool HasLayers =>
         glassBack != null && interiorMask != null && liquidSurface != null && glassFront != null;
+
+    public float SurfaceScaleAt(float level)
+    {
+        if (surfaceScaleByLevel == null || surfaceScaleByLevel.Length == 0) return 1f;
+        if (surfaceScaleByLevel.Length == 1) return surfaceScaleByLevel[0];
+
+        float t = Mathf.Clamp01(level) * (surfaceScaleByLevel.Length - 1);
+        int i = Mathf.Min(Mathf.FloorToInt(t), surfaceScaleByLevel.Length - 2);
+        return Mathf.Lerp(surfaceScaleByLevel[i], surfaceScaleByLevel[i + 1], t - i);
+    }
 
     public float QuantizedLevel(float progress)
     {

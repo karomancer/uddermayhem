@@ -147,7 +147,7 @@ public class TeatController : MonoBehaviour
         {
             float scale = conductor.streamScale * transform.lossyScale.x;
             int order = CupSorting.StreamOrder(teatPosition);
-            stream = MilkStream.Create(frames, scale, conductor.streamFramesPerBeat, spriteRenderer.sortingLayerID, order);
+            stream = MilkStream.Create(frames, conductor.SplashFrames, conductor.splashOffsetY, scale, conductor.streamFramesPerBeat, spriteRenderer.sortingLayerID, order);
         }
 
         Vector2 direction = -transform.up;

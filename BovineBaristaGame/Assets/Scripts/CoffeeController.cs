@@ -37,6 +37,11 @@ public class CoffeeController : MonoBehaviour
 
     CupSize size = schedule.size;
     float scale = conductor.cupScale * (size != null ? size.scaleMultiplier : 1f);
+    // All sizes share a baseline: the art is shifted so its foot lands footBelowAnchor under the lane anchor
+    if (size != null && size.footY != 0f)
+    {
+      anchor.y = anchor.y - conductor.footBelowAnchor - size.footY * scale;
+    }
     baseScale = new Vector3(scale, scale, 1f);
     transform.localScale = baseScale;
     transform.position = new Vector3(conductor.OffscreenLeftX, anchor.y, 0f);
@@ -107,6 +112,10 @@ public class CoffeeController : MonoBehaviour
         SetLayersVisible(false);
         renderer.enabled = true;
         renderer.sprite = wholeCup;
+        // A tipped cup lies on the counter, so the milk pours over it rather than vanishing behind it
+        renderer.sortingOrder = wholeCup == size.tippedCup
+          ? CupSorting.CupBackOrder(note.lane) + 3
+          : CupSorting.CupFrontOrder(note.lane) + 1;
         UpdateStream(false, size, beat);
       }
       else
@@ -197,13 +206,15 @@ public class CoffeeController : MonoBehaviour
 
     // The body and surface are drawn at the full level; sliding both down together keeps the crest under the ellipse
     float drop = Mathf.Lerp(size.surfaceEmptyY, size.surfaceFullY, level) - size.surfaceFullY;
-    layers.surface.transform.localPosition = new Vector3(0f, drop, 0f);
-    layers.surface.transform.localScale = new Vector3(Mathf.Lerp(size.surfaceScaleAtBottom, 1f, level), 1f, 1f);
+    // Narrowing is applied about the ellipse's own centre so it does not drift sideways as it descends
+    float surfaceScale = size.SurfaceScaleAt(level);
+    layers.surface.transform.localPosition = new Vector3((1f - surfaceScale) * size.surfaceCenterX, drop, 0f);
+    layers.surface.transform.localScale = new Vector3(surfaceScale, 1f, 1f);
     layers.surface.color = size.surfaceTint.Evaluate(level);
     if (layers.body != null)
     {
       layers.body.enabled = true;
-      layers.body.transform.localPosition = new Vector3(0f, drop, 0f);
+      layers.body.transform.localPosition = new Vector3(0f, drop + size.liquidBodyOffsetY, 0f);
       layers.body.color = size.liquidTint.Evaluate(level);
     }
 
@@ -212,16 +223,17 @@ public class CoffeeController : MonoBehaviour
     layers.latte.enabled = perfect;
     layers.overflow.enabled = overfilled || holdingPastPerfect;
 
-    UpdateStream(note.state == NoteState.Holding, size, beat);
+    UpdateStream(beat >= schedule.arriveBeat, size, beat);
   }
 
-  // While the note is held, tell the lane's teat how far down the liquid surface is so its milk stops there
-  private void UpdateStream(bool pouring, CupSize size, float beat)
+  // While this cup is in front of its teat, report where its liquid surface is so a squeeze lands on it —
+  // whether or not the judge counts the pour as filling anything
+  private void UpdateStream(bool seated, CupSize size, float beat)
   {
     TeatController teat = TeatController.ForLane(schedule.note.lane);
     if (teat == null) return;
 
-    if (pouring)
+    if (seated)
     {
       Vector3 surface = layers.surface.transform.TransformPoint(new Vector3(size.surfaceCenterX, size.surfaceFullY, 0f));
       teat.SetPourTarget(this, surface.y);

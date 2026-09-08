@@ -18,13 +18,14 @@ using UnityEngine.TestTools;
 public class AutoplaySmokeTests
 {
     private const string LevelConfigPath = "Assets/LevelConfigs/LevelConfigHard.asset";
-    private const float TargetBeat = 60f;
+    private const float TargetBeat = 74f;
     private const float RealtimeBudgetSeconds = 60f;
 
     private static readonly Type GameManagerType = Type.GetType("GameManager, Assembly-CSharp");
     private static readonly Type CupConductorType = Type.GetType("CupConductor, Assembly-CSharp");
     private static readonly Type AutoPlayType = Type.GetType("AutoPlayController, Assembly-CSharp");
     private static readonly Type CupViewType = Type.GetType("CoffeeController, Assembly-CSharp");
+    private static readonly Type TeatType = Type.GetType("TeatController, Assembly-CSharp");
 
     [UnityTest, Timeout(180000)]
     public IEnumerator HardChart_AutoplayJudgesEveryNotePerfect()
@@ -57,6 +58,7 @@ public class AutoplaySmokeTests
         var shotHalf = new HashSet<Note>();
         var shotDone = new HashSet<Note>();
         var shotExit = new HashSet<Note>();
+        bool emptySqueezeShot = false;
         while (beat < TargetBeat)
         {
             Assert.Less(Time.realtimeSinceStartup, deadline,
@@ -65,6 +67,20 @@ public class AutoplaySmokeTests
             maxCupsSeen = Math.Max(maxCupsSeen, UnityEngine.Object.FindObjectsOfType(CupViewType).Length);
             if (!string.IsNullOrEmpty(screenshotDir))
             {
+                // Squeeze an empty lane once so the no-cup stream can be seen (BackRight has no cup before beat 13)
+                if (beat >= 10f && beat < 10.6f && !emptySqueezeShot)
+                {
+                    var teat = UnityEngine.Object.FindObjectsOfType(TeatType).Cast<Component>()
+                        .First(c => (int)TeatType.GetField("teatPosition").GetValue(c) == 3);
+                    TeatType.GetMethod("SetSqueezing").Invoke(teat, new object[] { true });
+                    if (beat >= 10.3f)
+                    {
+                        Capture(System.IO.Path.Combine(screenshotDir, "empty_lane_squeeze.png"));
+                        TeatType.GetMethod("SetSqueezing").Invoke(teat, new object[] { false });
+                        emptySqueezeShot = true;
+                    }
+                }
+
                 // Quarter-note cups only: mid-hold, then just after the release
                 foreach (Note n in notes)
                 {

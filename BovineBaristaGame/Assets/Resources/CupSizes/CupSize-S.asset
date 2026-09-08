@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   holdBeats: 1
   arriveLeadBeatsOverride: 0
+  footY: -4.6
   scaleMultiplier: 0.5
   defaultCup: {fileID: 433943461, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
   inProgress:
@@ -34,5 +35,7 @@ MonoBehaviour:
   surfaceCenterX: -0.6
   surfaceFullY: 2.155
   surfaceEmptyY: -0.35
-  surfaceScaleAtBottom: 0.95
+  surfaceScaleByLevel:
+  - 0.95
+  - 1
   clipSurfaceToInterior: 1
