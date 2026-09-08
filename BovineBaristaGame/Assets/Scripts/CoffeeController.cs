@@ -1,9 +1,32 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CoffeeController : MonoBehaviour
 {
   public Note Note => schedule?.note;
+  public TeatPosition Lane => schedule.note.lane;
+
+  private static readonly List<CoffeeController> active = new List<CoffeeController>();
+  public static IReadOnlyList<CoffeeController> Active => active;
+
+  // World x moved since the previous frame (+ = toward the customer); 0 while seated
+  public float MotionX { get; private set; }
+  private float lastX;
+
+  public bool IsTipped => layers != null && renderer != null && renderer.enabled && schedule?.size != null && renderer.sprite == schedule.size.tippedCup;
+
+  // The interior opening in world space, so a teat can tell whether a passing rim would hit it
+  public bool TryGetRim(out float leftX, out float rightX, out float topY)
+  {
+    leftX = rightX = topY = 0f;
+    if (layers == null || layers.interior == null || IsTipped) return false;
+    Bounds bounds = layers.interior.bounds;
+    leftX = bounds.min.x;
+    rightX = bounds.max.x;
+    topY = bounds.max.y;
+    return true;
+  }
 
   private CupSchedule schedule;
   private GameManager gameManager;
@@ -45,6 +68,8 @@ public class CoffeeController : MonoBehaviour
     baseScale = new Vector3(scale, scale, 1f);
     transform.localScale = baseScale;
     transform.position = new Vector3(conductor.OffscreenLeftX, anchor.y, 0f);
+    lastX = transform.position.x;
+    active.Add(this);
 
     renderer = GetComponent<SpriteRenderer>();
     renderer.sortingOrder = CupSorting.CupFrontOrder(schedule.note.lane) + 1;
@@ -112,10 +137,9 @@ public class CoffeeController : MonoBehaviour
         SetLayersVisible(false);
         renderer.enabled = true;
         renderer.sprite = wholeCup;
-        // A tipped cup lies on the counter, so the milk pours over it rather than vanishing behind it
-        renderer.sortingOrder = wholeCup == size.tippedCup
-          ? CupSorting.CupBackOrder(note.lane) + 3
-          : CupSorting.CupFrontOrder(note.lane) + 1;
+        // Whole-cup frames sit behind the teat: a tall rim never hides the tip while it slides past,
+        // the teat swings aside instead (TeatController), and the milk pours over a tipped cup
+        renderer.sortingOrder = CupSorting.CupBackOrder(note.lane) + 3;
         UpdateStream(false, size, beat);
       }
       else
@@ -246,6 +270,7 @@ public class CoffeeController : MonoBehaviour
 
   void OnDestroy()
   {
+    active.Remove(this);
     if (schedule == null) return;
     TeatController teat = TeatController.ForLane(schedule.note.lane);
     if (teat != null) teat.ClearPourTarget(this);
@@ -298,6 +323,8 @@ public class CoffeeController : MonoBehaviour
 
   private void SetPosition(float x, float y)
   {
+    MotionX = x - lastX;
+    lastX = x;
     transform.position = new Vector3(x, y, 0f);
   }
 

@@ -66,6 +66,7 @@ public class AutoplaySmokeTests
         float beat = 0f;
         string screenshotDir = Environment.GetEnvironmentVariable("UDDER_SMOKE_SHOTS");
         var shotEnter = new HashSet<Note>();
+        var shotPush = new HashSet<(Note, float)>();
         var shotStasis = new HashSet<Note>();
         var shotPickup = new HashSet<Note>();
         var shotHalf = new HashSet<Note>();
@@ -121,6 +122,17 @@ public class AutoplaySmokeTests
                 foreach (Note n in notes)
                 {
                     if (n.HoldBeats < 1f && n != firstShortNote) continue;
+                    if (n.HoldBeats >= 4f)
+                    {
+                        foreach (float ahead in new[] { 0.85f, 0.7f, 0.55f, 0.4f })
+                        {
+                            if (n.state != NoteState.Pending || beat < n.startBeat - ahead || !shotPush.Add((n, ahead))) continue;
+                            var teat = UnityEngine.Object.FindObjectsOfType(TeatType).Cast<Component>()
+                                .First(c => (int)TeatType.GetField("teatPosition").GetValue(c) == (int)n.lane);
+                            Debug.Log($"[Push] beat {beat:F2} ({n.lane} cup at {n.startBeat}) teat swing {TeatType.GetProperty("SwingAngle").GetValue(teat):F1} deg");
+                            yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_push{ahead:0.00}.png"));
+                        }
+                    }
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 1.0f && shotEnter.Add(n))
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))

@@ -15,6 +15,23 @@ public class TeatController : MonoBehaviour
 
     public Vector3 TipWorldPosition => transform.TransformPoint(new Vector3(0f, -tipHeight, 0f));
 
+    [Header("Push")]
+    [Tooltip("A cup whose rim is above the tip swings the teat aside as a rim wall passes under it; the swing is capped at this angle (degrees)")]
+    public float maxSwingDegrees = 30f;
+    [Tooltip("Gap kept between the tip and a passing rim wall, in world units")]
+    public float pushMargin = 0.15f;
+    [Tooltip("Spring stiffness of the hang once released (higher = quicker return)")]
+    public float swingStiffness = 80f;
+    [Tooltip("Spring damping once released (lower = more overshoot)")]
+    public float swingDamping = 7f;
+
+    public float SwingAngle => swingAngle;
+
+    private Quaternion restLocalRotation;
+    private float swingSign = 1f;
+    private float swingAngle;
+    private float swingVelocity;
+
     private MilkStream stream;
     private CupConductor conductor;
     private CoffeeController pouringInto;
@@ -55,6 +72,11 @@ public class TeatController : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         byLane[(int)teatPosition] = this;
+        restLocalRotation = transform.localRotation;
+        // Which way a positive local z rotation moves the tip on screen (mirrored teats flip it)
+        Vector3 down = transform.TransformVector(Vector3.down);
+        Vector3 downTurned = transform.TransformVector(Quaternion.Euler(0f, 0f, 5f) * Vector3.down);
+        swingSign = downTurned.x - down.x >= 0f ? 1f : -1f;
     }
 
     void Start()
@@ -131,9 +153,11 @@ public class TeatController : MonoBehaviour
         if (Input.GetKeyUp(keyPress)) Release();
     }
 
-    // Runs after the cups have placed their surfaces for this frame
+    // Runs after the cups have moved and placed their surfaces for this frame
     void LateUpdate()
     {
+        UpdateSwing();
+
         if (!isSqueezing || conductor == null)
         {
             if (stream != null) stream.Hide();
@@ -157,6 +181,33 @@ public class TeatController : MonoBehaviour
         float length = drop / Mathf.Max(0.2f, -direction.y);
         float beat = gameManager.songPositionInBeats > 0f ? gameManager.songPositionInBeats : Time.time * 2f;
         stream.Show(start, direction, length, beat);
+    }
+
+    // While a tall cup is sliding and its opening spans the tip, the teat is held aside at its max swing;
+    // when the cup seats (the tip drops in) or its rim clears the tip (the tip slips over), the teat
+    // swings back on a damped spring
+    private void UpdateSwing()
+    {
+        Vector3 restTipLocal = restLocalRotation * Vector3.Scale(transform.localScale, new Vector3(0f, -tipHeight, 0f));
+        Vector3 restTip = transform.parent != null
+            ? transform.parent.TransformPoint(transform.localPosition + restTipLocal)
+            : transform.localPosition + restTipLocal;
+        float length = Mathf.Max(0.01f, (restTip - transform.position).magnitude);
+        float reach = length * Mathf.Sin(maxSwingDegrees * Mathf.Deg2Rad);
+
+        bool pushed = false;
+        foreach (CoffeeController cup in CoffeeController.Active)
+        {
+            if (cup.Lane != teatPosition || cup.MotionX <= 1e-4f) continue;
+            if (!cup.TryGetRim(out float left, out float right, out float top)) continue;
+            if (top < restTip.y + 0.05f) continue;
+            if (right + pushMargin >= restTip.x && left <= restTip.x + reach) { pushed = true; break; }
+        }
+
+        float target = pushed ? maxSwingDegrees : 0f;
+        swingVelocity += (swingStiffness * (target - swingAngle) - swingDamping * swingVelocity) * Time.deltaTime;
+        swingAngle += swingVelocity * Time.deltaTime;
+        transform.localRotation = restLocalRotation * Quaternion.Euler(0f, 0f, swingSign * swingAngle);
     }
 
     /// <summary>
