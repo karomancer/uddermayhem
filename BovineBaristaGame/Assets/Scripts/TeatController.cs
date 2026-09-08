@@ -10,14 +10,29 @@ public class TeatController : MonoBehaviour
     public KeyCode keyPress;
 
     public bool IsSqueezing => isSqueezing;
+    public int SortingOrder => spriteRenderer != null ? spriteRenderer.sortingOrder : 0;
+
+    private static readonly TeatController[] byLane = new TeatController[4];
+
+    public static TeatController ForLane(TeatPosition lane)
+    {
+        return byLane[(int)lane];
+    }
 
     private bool isSqueezing = false;
+    private SpriteRenderer spriteRenderer;
 
     private Animator animator;
 
     private GameManager gameManager;
 
     private InputAction inputAction;
+
+    void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        byLane[(int)teatPosition] = this;
+    }
 
     void Start()
     {
@@ -62,6 +77,8 @@ public class TeatController : MonoBehaviour
 
     void OnDestroy()
     {
+        if (byLane[(int)teatPosition] == this) byLane[(int)teatPosition] = null;
+
         // Unsubscribe from events to prevent memory leaks
         if (inputAction != null)
         {

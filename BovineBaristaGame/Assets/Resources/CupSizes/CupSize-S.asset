@@ -14,9 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   holdBeats: 1
   arriveLeadBeatsOverride: 0
+  scaleMultiplier: 0.5
   defaultCup: {fileID: 433943461, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
   inProgress:
   - {fileID: -992473982, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
   perfectCup: {fileID: -1437885181, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
   overfilledCup: {fileID: -391295378, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
-  tippedCup: {fileID: -133463363, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
+  tippedCup: {fileID: 21300000, guid: 6c9f9921528042f58fc4e60604b1555d, type: 3}
+  glassBack: {fileID: 21300000, guid: fcb68d21a2bf41d5bcefa778b440ce49, type: 3}
+  interiorMask: {fileID: 21300000, guid: 0f44070035844635bc6fa3d24155e354, type: 3}
+  liquidBody: {fileID: 0}
+  liquidSurface: {fileID: 21300000, guid: 6f2158bdc04f48c0a19b957ccf63fd6c, type: 3}
+  latteArt: {fileID: 21300000, guid: e3b3c352d3e94ef396a5321e92a5ad3e, type: 3}
+  glassFront: {fileID: 21300000, guid: a3f9d56b2e5849488d6ee8ef64f7da44, type: 3}
+  slideInCup: {fileID: 21300000, guid: bec02649d2ce4c3e9b29fc762da4167e, type: 3}
+  overflow: {fileID: 21300000, guid: 765247b6a46f4a4b9e8c18e9cb2a03d6, type: 3}
+  fillSteps: 2
+  surfaceFullY: 2.155
+  surfaceEmptyY: -0.35
+  surfaceScaleAtBottom: 0.95
+  clipSurfaceToInterior: 1

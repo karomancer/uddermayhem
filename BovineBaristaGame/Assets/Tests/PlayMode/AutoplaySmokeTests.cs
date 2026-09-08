@@ -50,12 +50,36 @@ public class AutoplaySmokeTests
         int maxCupsSeen = 0;
         float deadline = Time.realtimeSinceStartup + RealtimeBudgetSeconds;
         float beat = 0f;
+        string screenshotDir = Environment.GetEnvironmentVariable("UDDER_SMOKE_SHOTS");
+        var shotEnter = new HashSet<Note>();
+        var shotStasis = new HashSet<Note>();
+        var shotHalf = new HashSet<Note>();
+        var shotDone = new HashSet<Note>();
+        var shotExit = new HashSet<Note>();
         while (beat < TargetBeat)
         {
             Assert.Less(Time.realtimeSinceStartup, deadline,
                 $"song only reached beat {beat:F1} within {RealtimeBudgetSeconds}s; is audio advancing?");
             beat = (float)songBeatField.GetValue(gameManager);
             maxCupsSeen = Math.Max(maxCupsSeen, UnityEngine.Object.FindObjectsOfType(CupViewType).Length);
+            if (!string.IsNullOrEmpty(screenshotDir))
+            {
+                // Quarter-note cups only: mid-hold, then just after the release
+                foreach (Note n in notes)
+                {
+                    if (n.HoldBeats < 1f) continue;
+                    if (n.state == NoteState.Pending && beat >= n.startBeat - 1.0f && shotEnter.Add(n))
+                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
+                    if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))
+                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_stasis.png"));
+                    if (n.state == NoteState.Holding && beat >= n.pressBeat + n.HoldBeats * 0.5f && shotHalf.Add(n))
+                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_half.png"));
+                    if (n.state == NoteState.Done && beat >= n.endBeat + 0.2f && shotDone.Add(n))
+                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_done.png"));
+                    if (n.state == NoteState.Done && beat >= n.endBeat + 0.7f && shotExit.Add(n))
+                        Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_exit.png"));
+                }
+            }
             yield return null;
         }
 
@@ -76,6 +100,29 @@ public class AutoplaySmokeTests
         Assert.AreEqual(doneCount, streak, "streak should equal the number of completed notes");
 
         Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}");
+    }
+
+    private static void Capture(string path)
+    {
+        Camera camera = Camera.main;
+        const int width = 1280, height = 720;
+        var target = new RenderTexture(width, height, 24);
+        RenderTexture previousTarget = camera.targetTexture;
+        camera.targetTexture = target;
+        camera.Render();
+        camera.targetTexture = previousTarget;
+
+        RenderTexture previousActive = RenderTexture.active;
+        RenderTexture.active = target;
+        var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+        texture.Apply();
+        RenderTexture.active = previousActive;
+
+        System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+        UnityEngine.Object.Destroy(texture);
+        target.Release();
+        UnityEngine.Object.Destroy(target);
     }
 
     private static void ForceAutoPlay(Scene scene, LoadSceneMode mode)

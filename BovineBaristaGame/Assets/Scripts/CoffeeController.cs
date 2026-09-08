@@ -9,10 +9,22 @@ public class CoffeeController : MonoBehaviour
   private GameManager gameManager;
   private CupConductor conductor;
   private new SpriteRenderer renderer;
+  private CupLayers layers;
 
   private Vector3 anchor;
   private Vector3 baseScale;
   private NoteState lastState;
+
+  private class CupLayers
+  {
+    public SpriteRenderer back;
+    public SpriteRenderer body;
+    public SpriteRenderer surface;
+    public SpriteRenderer latte;
+    public SpriteRenderer front;
+    public SpriteRenderer overflow;
+    public SpriteMask interior;
+  }
 
   // Cups come from the barista on the left and are passed to the customer on the right
   public void Bind(CupSchedule _schedule, GameManager _gameManager, CupConductor _conductor, Vector3 _anchor)
@@ -23,16 +35,21 @@ public class CoffeeController : MonoBehaviour
     anchor = _anchor;
     lastState = schedule.note.state;
 
-    baseScale = new Vector3(conductor.cupScale, conductor.cupScale, 1f);
+    CupSize size = schedule.size;
+    float scale = conductor.cupScale * (size != null ? size.scaleMultiplier : 1f);
+    baseScale = new Vector3(scale, scale, 1f);
     transform.localScale = baseScale;
     transform.position = new Vector3(conductor.OffscreenLeftX, anchor.y, 0f);
 
     renderer = GetComponent<SpriteRenderer>();
-    TeatPosition lane = schedule.note.lane;
-    renderer.sortingOrder = (lane == TeatPosition.BackLeft || lane == TeatPosition.BackRight) ? 0 : 1;
-    if (schedule.size != null)
+    renderer.sortingOrder = CupSorting.CupFrontOrder(schedule.note.lane) + 1;
+    if (size != null && size.HasLayers)
     {
-      renderer.sprite = schedule.size.defaultCup;
+      BuildLayers(size);
+    }
+    else if (size != null)
+    {
+      renderer.sprite = size.defaultCup;
     }
   }
 
@@ -48,7 +65,7 @@ public class CoffeeController : MonoBehaviour
     }
 
     UpdateMotion(beat);
-    UpdateSprite(beat);
+    UpdateVisuals(beat);
   }
 
   private void UpdateMotion(float beat)
@@ -69,10 +86,11 @@ public class CoffeeController : MonoBehaviour
     }
   }
 
-  private void UpdateSprite(float beat)
+  private void UpdateVisuals(float beat)
   {
     Note note = schedule.note;
-    if (schedule.size == null) return;
+    CupSize size = schedule.size;
+    if (size == null) return;
 
     bool justStartedHolding = note.state == NoteState.Holding && lastState != NoteState.Holding;
     if (justStartedHolding && note.pressJudgment == BeatTiming.OnTime)
@@ -81,7 +99,137 @@ public class CoffeeController : MonoBehaviour
     }
     lastState = note.state;
 
-    renderer.sprite = SpriteFor(note, schedule.size, beat);
+    Sprite wholeCup = WholeCupSpriteFor(note, size, beat);
+    if (layers != null)
+    {
+      if (wholeCup != null)
+      {
+        SetLayersVisible(false);
+        renderer.enabled = true;
+        renderer.sprite = wholeCup;
+      }
+      else
+      {
+        renderer.enabled = false;
+        UpdateLayers(note, size, beat);
+      }
+    }
+    else
+    {
+      renderer.sprite = wholeCup != null ? wholeCup : SpriteFor(note, size, beat);
+    }
+  }
+
+  // Whole-cup frames: slide in until arrival, then any pre-hit frames counted back from the hit (the
+  // layered resting cup fills the gap); from the hit on the layered cup fills and shows its result;
+  // a tipped cup stays tipped
+  private Sprite WholeCupSpriteFor(Note note, CupSize size, float beat)
+  {
+    bool done = note.state == NoteState.Done;
+    bool tipped = done && note.releaseJudgment != BeatTiming.OnTime && note.releaseJudgment != BeatTiming.TooLate;
+    if (tipped) return size.tippedCup;
+    if (note.state != NoteState.Pending) return null;
+    if (beat < schedule.arriveBeat) return size.slideInCup;
+    return size.PreHitFrameAt(note.startBeat - beat);
+  }
+
+  private void BuildLayers(CupSize size)
+  {
+    int behindTeat = CupSorting.CupBackOrder(schedule.note.lane);
+    int inFrontOfTeat = CupSorting.CupFrontOrder(schedule.note.lane);
+    layers = new CupLayers
+    {
+      back = Layer("GlassBack", size.glassBack, behindTeat),
+      body = size.liquidBody != null ? Layer("LiquidBody", size.liquidBody, behindTeat + 1) : null,
+      surface = Layer("LiquidSurface", size.liquidSurface, behindTeat + 2),
+      latte = Layer("LatteArt", size.latteArt, behindTeat + 3),
+      front = Layer("GlassFront", size.glassFront, inFrontOfTeat),
+      overflow = Layer("Overflow", size.overflow, inFrontOfTeat + 1)
+    };
+    if (layers.body != null)
+    {
+      layers.body.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+    }
+    if (size.clipSurfaceToInterior)
+    {
+      layers.surface.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+    }
+
+    GameObject maskObject = new GameObject("InteriorMask");
+    maskObject.transform.SetParent(transform, false);
+    layers.interior = maskObject.AddComponent<SpriteMask>();
+    layers.interior.sprite = size.interiorMask;
+    layers.interior.isCustomRangeActive = true;
+    layers.interior.backSortingLayerID = renderer.sortingLayerID;
+    layers.interior.frontSortingLayerID = renderer.sortingLayerID;
+    layers.interior.backSortingOrder = behindTeat;
+    layers.interior.frontSortingOrder = behindTeat + 3;
+
+    renderer.enabled = false;
+  }
+
+  private SpriteRenderer Layer(string name, Sprite sprite, int order)
+  {
+    GameObject child = new GameObject(name);
+    child.transform.SetParent(transform, false);
+    SpriteRenderer layer = child.AddComponent<SpriteRenderer>();
+    layer.sprite = sprite;
+    layer.sortingLayerID = renderer.sortingLayerID;
+    layer.sortingOrder = order;
+    return layer;
+  }
+
+  private void UpdateLayers(Note note, CupSize size, float beat)
+  {
+    bool done = note.state == NoteState.Done;
+    bool perfect = done && note.releaseJudgment == BeatTiming.OnTime;
+    bool overfilled = done && note.releaseJudgment == BeatTiming.TooLate;
+
+    // Level 0 is the resting cup: the espresso shot already sits at the lip before any milk
+    float level = LevelFor(note, size, beat);
+    layers.back.enabled = true;
+    layers.front.enabled = true;
+    layers.surface.enabled = true;
+
+    // The body and surface are drawn at the full level; sliding both down together keeps the crest under the ellipse
+    float drop = Mathf.Lerp(size.surfaceEmptyY, size.surfaceFullY, level) - size.surfaceFullY;
+    layers.surface.transform.localPosition = new Vector3(0f, drop, 0f);
+    layers.surface.transform.localScale = new Vector3(Mathf.Lerp(size.surfaceScaleAtBottom, 1f, level), 1f, 1f);
+    layers.surface.color = size.surfaceTint.Evaluate(level);
+    if (layers.body != null)
+    {
+      layers.body.enabled = true;
+      layers.body.transform.localPosition = new Vector3(0f, drop, 0f);
+      layers.body.color = size.liquidTint.Evaluate(level);
+    }
+
+    bool holdingPastPerfect = note.state == NoteState.Holding && gameManager.Judge != null
+      && beat > note.endBeat + gameManager.Judge.ReleasePerfectBeats;
+    layers.latte.enabled = perfect;
+    layers.overflow.enabled = overfilled || holdingPastPerfect;
+  }
+
+  private void SetLayersVisible(bool visible)
+  {
+    layers.back.enabled = visible;
+    if (layers.body != null) layers.body.enabled = visible;
+    layers.surface.enabled = visible;
+    layers.latte.enabled = visible;
+    layers.front.enabled = visible;
+    layers.overflow.enabled = visible;
+  }
+
+  private static float LevelFor(Note note, CupSize size, float beat)
+  {
+    switch (note.state)
+    {
+      case NoteState.Holding:
+        return size.QuantizedLevel((beat - note.pressBeat) / note.HoldBeats);
+      case NoteState.Done:
+        return 1f;
+      default:
+        return 0f;
+    }
   }
 
   private Sprite SpriteFor(Note note, CupSize size, float beat)
@@ -99,8 +247,7 @@ public class CoffeeController : MonoBehaviour
 
       case NoteState.Done:
         if (note.releaseJudgment == BeatTiming.OnTime) return size.perfectCup;
-        if (note.releaseJudgment == BeatTiming.TooLate) return size.overfilledCup;
-        return size.tippedCup;
+        return size.overfilledCup;
 
       default:
         return size.defaultCup;
