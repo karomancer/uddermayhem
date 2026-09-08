@@ -6,6 +6,7 @@ using UnityEngine;
 /// handleAngle swings both halves about where they hang from the jar.
 /// The jar is pinned to the camera's bottom-left corner in world units, and the tips number is
 /// pinned to the jar, so the corner looks the same at every screen size and aspect ratio.
+/// It stays below the screen through the tutorial and slides up once the score is shown.
 /// </summary>
 public class TipJar : MonoBehaviour
 {
@@ -31,15 +32,21 @@ public class TipJar : MonoBehaviour
     [Tooltip("Bottom-left corner of the score text's rect, measured from the jar centre in world units")]
     public Vector2 scoreTextOffset = new Vector2(-0.06f, -0.72f);
 
+    [Header("Entrance")]
+    [Tooltip("The jar waits below the screen until the score is shown (after the tutorial), then slides up over this many beats")]
+    public float slideInBeats = 1f;
+
     [Header("Sorting")]
     public string sortingLayerName = "UI";
     public int sortingOrder = 0;
 
     private SpriteRenderer handleBackRenderer;
     private SpriteRenderer handleFrontRenderer;
+    private GameManager gameManager;
     private RectTransform scoreRect;
     private Canvas scoreCanvas;
     private readonly Vector3[] corners = new Vector3[4];
+    private float entranceStartTime = -1f;
 
     void Awake()
     {
@@ -68,16 +75,36 @@ public class TipJar : MonoBehaviour
         if (camera == null) return;
         float depth = transform.position.z - camera.transform.position.z;
         Vector3 corner = camera.ViewportToWorldPoint(new Vector3(0f, 0f, depth));
-        transform.position = new Vector3(corner.x + cornerOffset.x, corner.y + cornerOffset.y, transform.position.z);
+
+        // Hidden = the whole artboard just below the bottom edge; the score text rides along since it is placed off the jar
+        float artHeight = jarFront.rect.height / jarFront.pixelsPerUnit * scale;
+        float hiddenY = corner.y - artHeight * 0.5f - 0.1f;
+        float shownY = corner.y + cornerOffset.y;
+        float y = Mathf.Lerp(hiddenY, shownY, EaseOutCubic(EntranceProgress()));
+        transform.position = new Vector3(corner.x + cornerOffset.x, y, transform.position.z);
 
         if (placeScoreText) PlaceScoreText(camera);
     }
+
+    private float EntranceProgress()
+    {
+        if (entranceStartTime < 0f)
+        {
+            if (gameManager == null) gameManager = FindObjectOfType<GameManager>();
+            if (gameManager == null || !gameManager.ScoreVisible) return 0f;
+            entranceStartTime = Time.time;
+        }
+        float duration = slideInBeats * CupConductor.SecPerBeat;
+        return duration <= 0f ? 1f : Mathf.Clamp01((Time.time - entranceStartTime) / duration);
+    }
+
+    private static float EaseOutCubic(float t) => 1f - Mathf.Pow(1f - t, 3f);
 
     private void PlaceScoreText(Camera camera)
     {
         if (scoreRect == null)
         {
-            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager == null) gameManager = FindObjectOfType<GameManager>();
             if (gameManager == null || gameManager.ScoreText == null) return;
             scoreRect = gameManager.ScoreText.rectTransform;
             scoreCanvas = scoreRect.GetComponentInParent<Canvas>();

@@ -52,5 +52,6 @@ MonoBehaviour:
   worldWidth: 6.55
   placeScoreText: 1
   scoreTextOffset: {x: -0.06, y: -0.72}
+  slideInBeats: 1
   sortingLayerName: UI
   sortingOrder: 0

@@ -73,6 +73,8 @@ public class AutoplaySmokeTests
         var shotExit = new HashSet<Note>();
         bool emptySqueezeShot = false;
         bool hudShot = false;
+        Note firstShortNote = notes.FirstOrDefault(n => n.HoldBeats < 1f);
+        bool entranceShot = false;
         while (beat < TargetBeat)
         {
             Assert.Less(Time.realtimeSinceStartup, deadline,
@@ -81,6 +83,12 @@ public class AutoplaySmokeTests
             maxCupsSeen = Math.Max(maxCupsSeen, UnityEngine.Object.FindObjectsOfType(CupViewType).Length);
             if (!string.IsNullOrEmpty(screenshotDir))
             {
+                if (beat > 0f && beat < 0.8f && !entranceShot)
+                {
+                    entranceShot = true;
+                    Debug.Log($"[HUD] jar entrance capture at beat {beat:F2}");
+                    yield return Capture(System.IO.Path.Combine(screenshotDir, "jar_entrance.png"));
+                }
                 if (beat >= 9f && !hudShot)
                 {
                     yield return Capture(System.IO.Path.Combine(screenshotDir, "hud.png"));
@@ -112,7 +120,7 @@ public class AutoplaySmokeTests
                 // Quarter-note cups only: mid-hold, then just after the release
                 foreach (Note n in notes)
                 {
-                    if (n.HoldBeats < 1f) continue;
+                    if (n.HoldBeats < 1f && n != firstShortNote) continue;
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 1.0f && shotEnter.Add(n))
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))

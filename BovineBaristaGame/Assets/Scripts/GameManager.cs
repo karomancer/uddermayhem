@@ -188,6 +188,8 @@ public class GameManager : MonoBehaviour
     shouldShowScore = true;
   }
 
+  public bool ScoreVisible => shouldShowScore;
+
   private void UpdateCountdown()
   {
     if (CountdownText == null || firstNoteBeat < 0) return;
