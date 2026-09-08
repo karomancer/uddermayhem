@@ -1,292 +1,153 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
-enum CupState
-{
-  Default,
-  InProgress1,
-  InProgress2,
-  OverFilled,
-  TippedOver,
-  Perfect
-}
 
 public class CoffeeController : MonoBehaviour
 {
-  // TODO: refactor this bullshit
-  public int measure = 4;
-  public float beatInMeasure = 1.0f;
-  public float duration = 1.0f;
+  public Note Note => schedule?.note;
 
-  private string cupTag;
-  public string CupTagName => cupTag;  // Expose for AutoPlayController
-
-  // Loaded in programatically
-  private Sprite defaultCup;
-  private Sprite tooEarlyCup;
-  private Sprite tooLateCup;
-  private Sprite inProgressCup1;
-  private Sprite inProgressCup2;
-  private Sprite perfectCup;
-
-  private Sprite[] cupSprites;
-
+  private CupSchedule schedule;
   private GameManager gameManager;
-
+  private CupConductor conductor;
   private new SpriteRenderer renderer;
 
-  private CupState currentState;
+  private Vector3 anchor;
+  private Vector3 baseScale;
+  private NoteState lastState;
 
-  private float scale;
-
-  private float endX;
-
-  private bool wasHit = false; // Track if cup was interacted with
-  private bool hasBeenProcessed = false; // Prevent multiple entry processing
-  private bool hasExitBeenProcessed = false; // Prevent multiple exit processing
-  private float entryTime = -1f; // Track when entry happened for minimum hold validation
-
-  public void init(string _cupTag, int _measure, float _beatInMeasure, float _duration, float _scale)
+  // Cups come from the barista on the left and are passed to the customer on the right
+  public void Bind(CupSchedule _schedule, GameManager _gameManager, CupConductor _conductor, Vector3 _anchor)
   {
-    cupTag = _cupTag;
-    measure = _measure;
-    beatInMeasure = _beatInMeasure;
-    duration = _duration;
-    scale = _scale;
-  }
+    schedule = _schedule;
+    gameManager = _gameManager;
+    conductor = _conductor;
+    anchor = _anchor;
+    lastState = schedule.note.state;
 
-  void Start()
-  {
-    gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+    baseScale = new Vector3(conductor.cupScale, conductor.cupScale, 1f);
+    transform.localScale = baseScale;
+    transform.position = new Vector3(conductor.OffscreenLeftX, anchor.y, 0f);
+
     renderer = GetComponent<SpriteRenderer>();
-    renderer.sortingOrder = (cupTag == CupTag.BackLeft || cupTag == CupTag.BackRight) ? 0 : 1;
-    transform.localScale = new Vector3(scale, scale, 0f);
-
-    switch (duration)
+    TeatPosition lane = schedule.note.lane;
+    renderer.sortingOrder = (lane == TeatPosition.BackLeft || lane == TeatPosition.BackRight) ? 0 : 1;
+    if (schedule.size != null)
     {
-      case 0.5f:
-        cupSprites = Resources.LoadAll<Sprite>("cup-XS-spritesheet");
-        defaultCup = cupSprites[0];
-        perfectCup = cupSprites[1];
-        tooLateCup = cupSprites[2];
-        tooEarlyCup = cupSprites[3];
-        break;
-      case 1.0f:
-        cupSprites = Resources.LoadAll<Sprite>("cup-S-spritesheet");
-        defaultCup = cupSprites[0];
-        inProgressCup1 = cupSprites[1];
-        tooEarlyCup = cupSprites[2];
-        tooLateCup = cupSprites[3];
-        perfectCup = cupSprites[4];
-        break;
-      case 2.0f:
-        cupSprites = Resources.LoadAll<Sprite>("cup-M-spritesheet");
-        defaultCup = cupSprites[0];
-        inProgressCup1 = cupSprites[1];
-        perfectCup = cupSprites[2];
-        tooLateCup = cupSprites[3];
-        tooEarlyCup = cupSprites[4];
-        break;
-      case 4.0f:
-        cupSprites = Resources.LoadAll<Sprite>("cup-L-spritesheet");
-        defaultCup = cupSprites[0];
-        inProgressCup1 = cupSprites[1];
-        inProgressCup2 = cupSprites[2];
-        perfectCup = cupSprites[3];
-        tooLateCup = cupSprites[4];
-        tooEarlyCup = cupSprites[5];
-        break;
-      default:
-        Debug.LogError("Invalid cup duration: " + duration);
-        break;
+      renderer.sprite = schedule.size.defaultCup;
     }
-
-    // defaultCup = renderer.sprite;
-    renderer.sprite = defaultCup;
-
-
-    endX = CupConductor.CupTagEndVector[cupTag].x;
-
-    // Wait for cup to arrive (1 beat) + hold duration (in beats) + linger time (0.5 beats) before sliding away
-    float lingerBeats = 0.5f;  // Extra beats to show completed cup
-    Invoke("Serve", CupConductor.SecPerBeat * (1 + duration + lingerBeats));
   }
 
   void Update()
   {
-    if (transform.position.x != endX)
+    if (schedule == null) return;
+
+    float beat = gameManager.songPositionInBeats;
+    if (beat >= schedule.departBeat + conductor.exitBeats)
     {
-      // CupConductor.SecPerBeat;
-      float speed = (endX - transform.position.x) * 5;
-      transform.Translate(Vector2.right * speed * Time.deltaTime);
+      Destroy(gameObject);
+      return;
+    }
+
+    UpdateMotion(beat);
+    UpdateSprite(beat);
+  }
+
+  private void UpdateMotion(float beat)
+  {
+    if (beat < schedule.arriveBeat)
+    {
+      float t = Progress(beat - schedule.spawnBeat, conductor.enterBeats);
+      SetPosition(Mathf.Lerp(conductor.OffscreenLeftX, anchor.x, EaseOutCubic(t)), anchor.y);
+    }
+    else if (beat < schedule.departBeat)
+    {
+      SetPosition(anchor.x, anchor.y);
+    }
+    else
+    {
+      float t = Progress(beat - schedule.departBeat, conductor.exitBeats);
+      SetPosition(Mathf.Lerp(anchor.x, conductor.OffscreenRightX, EaseInCubic(t)), anchor.y);
     }
   }
 
-  private void OnTriggerEnter2D(Collider2D other)
+  private void UpdateSprite(float beat)
   {
-    if (other.gameObject.tag == "Teat")
+    Note note = schedule.note;
+    if (schedule.size == null) return;
+
+    bool justStartedHolding = note.state == NoteState.Holding && lastState != NoteState.Holding;
+    if (justStartedHolding && note.pressJudgment == BeatTiming.OnTime)
     {
-      string otherType = other.gameObject.name.Split("_")[1];
-      float animationDuration = (CupConductor.SecPerBeat * duration) / 2;
-      if (otherType == cupTag && !hasBeenProcessed)
-      {
-        hasBeenProcessed = true; // Prevent re-processing
-        wasHit = true; // Mark as interacted with
+      StartCoroutine(ScaleBump(1.08f, 0.15f));
+    }
+    lastState = note.state;
 
-        // Cancel any pending sprite changes
-        CancelInvoke("ChangeSpriteToInProgress1");
-        CancelInvoke("ChangeSpriteToInProgress2");
-        CancelInvoke("ChangeSpriteToTippedOver");
+    renderer.sprite = SpriteFor(note, schedule.size, beat);
+  }
 
-        TeatController teatController = other.gameObject.GetComponent<TeatController>();
-        float inputTime = teatController.songPositionAtPress;
-        entryTime = inputTime; // Track entry time for hold validation
-        // Score on entry but don't affect streak - streak only changes on release
-        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure, inputTime, affectStreak: false);
-
-        // Adjust delay to account for time elapsed since actual input
-        float timeSincePress = (gameManager.songPositionInBeats - inputTime) * CupConductor.SecPerBeat;
-        float adjustedDelay = Mathf.Max(0, animationDuration - timeSincePress);
-
-        if (timing == BeatTiming.OnTime)
+  private Sprite SpriteFor(Note note, CupSize size, float beat)
+  {
+    switch (note.state)
+    {
+      case NoteState.Holding:
+        LaneJudge judge = gameManager.Judge;
+        if (judge != null && beat > note.endBeat + judge.ReleasePerfectBeats)
         {
-          // Immediate visual feedback - subtle scale bump
-          StartCoroutine(ScaleBump(1.08f, 0.15f));
-
-          if (duration > 0.5f && duration < 4.0f)
-          {
-            Invoke("ChangeSpriteToInProgress1", adjustedDelay);
-          }
-
-          if (duration == 4.0f)
-          {
-            Invoke("ChangeSpriteToInProgress1", adjustedDelay / 2);
-            Invoke("ChangeSpriteToInProgress2", adjustedDelay);
-          }
+          return size.overfilledCup;
         }
-        else
-        {
-          Invoke("ChangeSpriteToTippedOver", adjustedDelay);
-          currentState = CupState.TippedOver;
-        }
-      }
+        // Milk flows from the squeeze at the cup's own rate, so the fill always feels the same
+        return size.InProgressAt((beat - note.pressBeat) / note.HoldBeats);
+
+      case NoteState.Done:
+        if (note.releaseJudgment == BeatTiming.OnTime) return size.perfectCup;
+        if (note.releaseJudgment == BeatTiming.TooLate) return size.overfilledCup;
+        return size.tippedCup;
+
+      default:
+        return size.defaultCup;
     }
   }
 
-  private void OnTriggerExit2D(Collider2D other)
+  private void SetPosition(float x, float y)
   {
-    if (other.gameObject.tag == "Teat")
-    {
-      string otherType = other.gameObject.name.Split("_")[1];
-      if (otherType == cupTag && currentState != CupState.TippedOver && !hasExitBeenProcessed)
-      {
-        hasExitBeenProcessed = true; // Prevent re-processing exit
-        TeatController teatController = other.gameObject.GetComponent<TeatController>();
-        float inputTime = teatController.songPositionAtRelease;
-
-        // Check minimum hold duration - must hold for at least half the expected duration
-        float minimumHoldBeats = duration * 0.5f;
-        float actualHoldBeats = inputTime - entryTime;
-        if (actualHoldBeats < minimumHoldBeats)
-        {
-          // Released too quickly - treat as failed
-          ChangeSpriteToTippedOver();
-          gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime); // Still score, but will be TooEarly
-          return;
-        }
-
-        BeatTiming timing = gameManager.IsOnBeat(measure, beatInMeasure + duration, inputTime);
-        if (timing == BeatTiming.OnTime)
-        {
-          ChangeSpriteToLatteArt();
-        }
-        else if (timing == BeatTiming.TooLate)
-        {
-          ChangeSpriteToOverFilled();
-        }
-        else
-        {
-          ChangeSpriteToTippedOver();
-        }
-      }
-    }
+    transform.position = new Vector3(x, y, 0f);
   }
 
-  private void Serve()
+  private static float Progress(float elapsedBeats, float durationBeats)
   {
-    Vector2 edgeVector = Camera.main.ViewportToWorldPoint(new Vector2(1, 0));
-    endX = edgeVector.x + 10;
-    Destroy(gameObject, CupConductor.SecPerBeat * duration);
+    return durationBeats <= 0f ? 1f : Mathf.Clamp01(elapsedBeats / durationBeats);
   }
 
-  private void OnDestroy()
+  private static float EaseOutCubic(float t)
   {
-    // Report miss if cup was never interacted with
-    if (!wasHit && gameManager != null)
-    {
-      gameManager.ReportMiss();
-    }
+    return 1f - Mathf.Pow(1f - t, 3f);
   }
 
-  private void ChangeSpriteToInProgress1()
+  private static float EaseInCubic(float t)
   {
-    renderer.sprite = inProgressCup1;
-    currentState = CupState.InProgress1;
-  }
-
-  private void ChangeSpriteToInProgress2()
-  {
-    renderer.sprite = inProgressCup2;
-    currentState = CupState.InProgress2;
-  }
-
-  private void ChangeSpriteToTippedOver()
-  {
-    renderer.sprite = tooEarlyCup;
-  }
-
-  private void ChangeSpriteToOverFilled()
-  {
-    renderer.sprite = tooLateCup;
-  }
-
-  private void ChangeSpriteToLatteArt()
-  {
-    renderer.sprite = perfectCup;
-  }
-
-  private void ChangeSpriteToDefault()
-  {
-    renderer.sprite = defaultCup;
+    return t * t * t;
   }
 
   private IEnumerator ScaleBump(float bumpScale, float duration)
   {
-    Vector3 originalScale = transform.localScale;
-    Vector3 targetScale = originalScale * bumpScale;
+    Vector3 targetScale = baseScale * bumpScale;
     float halfDuration = duration / 2f;
 
-    // Scale up
     float elapsed = 0f;
     while (elapsed < halfDuration)
     {
       elapsed += Time.deltaTime;
-      float t = elapsed / halfDuration;
-      transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
+      transform.localScale = Vector3.Lerp(baseScale, targetScale, elapsed / halfDuration);
       yield return null;
     }
 
-    // Scale down
     elapsed = 0f;
     while (elapsed < halfDuration)
     {
       elapsed += Time.deltaTime;
-      float t = elapsed / halfDuration;
-      transform.localScale = Vector3.Lerp(targetScale, originalScale, t);
+      transform.localScale = Vector3.Lerp(targetScale, baseScale, elapsed / halfDuration);
       yield return null;
     }
 
-    transform.localScale = originalScale;
+    transform.localScale = baseScale;
   }
 }

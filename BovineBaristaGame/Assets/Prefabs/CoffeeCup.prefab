@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3129628112499572072}
   - component: {fileID: 2349043344913621273}
-  - component: {fileID: -7887237968204707514}
   - component: {fileID: 7063389827849051276}
   m_Layer: 0
   m_Name: CoffeeCup
@@ -86,51 +85,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &-7887237968204707514
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6958796372611257120}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: -0.5, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 7.0935917, y: 5.3700004}
-    newSize: {x: 7.0935917, y: 5.3700004}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 3, y: 3.5}
-  m_EdgeRadius: 0
 --- !u!114 &7063389827849051276
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,12 +97,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a1e97bce0fe54443ae1bbcab596f202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultCup: {fileID: 433943461, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
-  tooEarlyCup: {fileID: -133463363, guid: 877f6da6060044f54835c35f0d81a0f7, type: 3}
-  tooLateCup: {fileID: 271528874, guid: 8752ef985ba024740b49dfdb66944333, type: 3}
-  inProgressCup1: {fileID: 0}
-  inProgressCup2: {fileID: 0}
-  perfectCup: {fileID: -1613750369, guid: 8752ef985ba024740b49dfdb66944333, type: 3}
-  measure: 9
-  beatInMeasure: 1
-  duration: 1
