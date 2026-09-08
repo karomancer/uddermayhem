@@ -74,6 +74,7 @@ public class AutoplaySmokeTests
         var shotExit = new HashSet<Note>();
         bool emptySqueezeShot = false;
         bool hudShot = false;
+        bool danceOnBeatShot = false, danceMidBeatShot = false, dance2xShot = false;
         Note firstShortNote = notes.FirstOrDefault(n => n.HoldBeats < 1f);
         bool entranceShot = false;
         while (beat < TargetBeat)
@@ -89,6 +90,26 @@ public class AutoplaySmokeTests
                     entranceShot = true;
                     Debug.Log($"[HUD] jar entrance capture at beat {beat:F2}");
                     yield return Capture(System.IO.Path.Combine(screenshotDir, "jar_entrance.png"));
+                }
+                int multiplier = (int)GameManagerType.GetProperty("CurrentMultiplier").GetValue(gameManager);
+                float phase = beat - Mathf.Floor(beat);
+                if (multiplier == 2 && !dance2xShot && phase < 0.06f)
+                {
+                    dance2xShot = true;
+                    yield return Capture(System.IO.Path.Combine(screenshotDir, "jar_dance_2x_onbeat.png"));
+                    LogJarRig("2x on-beat", (float)songBeatField.GetValue(gameManager));
+                }
+                if (multiplier == 4 && !danceOnBeatShot && phase < 0.06f)
+                {
+                    danceOnBeatShot = true;
+                    yield return Capture(System.IO.Path.Combine(screenshotDir, "jar_dance_4x_onbeat.png"));
+                    LogJarRig("4x on-beat", (float)songBeatField.GetValue(gameManager));
+                }
+                if (multiplier == 4 && !danceMidBeatShot && Mathf.Abs(phase - 0.3f) < 0.05f)
+                {
+                    danceMidBeatShot = true;
+                    yield return Capture(System.IO.Path.Combine(screenshotDir, "jar_dance_4x_stretch.png"));
+                    LogJarRig("4x stretch", (float)songBeatField.GetValue(gameManager));
                 }
                 if (beat >= 9f && !hudShot)
                 {
@@ -171,6 +192,17 @@ public class AutoplaySmokeTests
         int score = (int)GameManagerType.GetProperty("CurrentScore").GetValue(gameManager);
         Assert.Greater(score, 0, "autoplay should have scored");
         Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}, score {score}/{maxScore}");
+    }
+
+    private static void LogJarRig(string label, float beat)
+    {
+        var jar = GameObject.Find("TipJar");
+        var baseBone = jar != null ? jar.transform.Find("base") : null;
+        var belly = baseBone != null ? baseBone.Find("belly") : null;
+        var front = jar != null ? jar.transform.Find("JarFront") : null;
+        var skin = front != null ? front.GetComponent("UnityEngine.U2D.Animation.SpriteSkin") : null;
+        object valid = skin != null ? skin.GetType().GetProperty("isValid", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(skin) : null;
+        Debug.Log($"[Dance] {label} beat {beat:F2} base scale {baseBone?.localScale} belly scale {belly?.localScale} skin valid {valid}");
     }
 
     // Captures at every size in UDDER_SMOKE_SIZE ("1280x720,1692x772"), else at the batchmode screen size.

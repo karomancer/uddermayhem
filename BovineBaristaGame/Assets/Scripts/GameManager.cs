@@ -72,6 +72,7 @@ public class GameManager : MonoBehaviour
   private int currentStreak = 0;
   private int maxStreak = 0;
   public int CurrentStreak => currentStreak;
+  public int CurrentMultiplier => GetMultiplier();
   public int MaxStreak => maxStreak;
 
   [Header("Grading (share of the chart's maximum score)")]
@@ -455,6 +456,8 @@ public class GameManager : MonoBehaviour
   private void HandlePressJudged(Note note, BeatTiming timing)
   {
     SubmitCustomerFeedback(timing, affectStreak: false);
+    // An imperfect press tips the cup (the judge ends the note right there), and a lost cup ends the streak
+    if (note.state == NoteState.Done) ResetStreak();
   }
 
   private void HandleReleaseJudged(Note note, BeatTiming timing)
