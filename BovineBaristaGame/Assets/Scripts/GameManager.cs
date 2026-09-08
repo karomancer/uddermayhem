@@ -18,6 +18,14 @@ public class GameManager : MonoBehaviour
   public static string currentDifficulty = "Medium";
   private static int finalScore = 0;
   public static int FinalScore => finalScore;
+  private static Grade finalGrade = Grade.Failed;
+  public static Grade FinalGrade => finalGrade;
+  private static float finalAccuracy = 0f;
+  public static float FinalAccuracy => finalAccuracy;
+
+  private const int PerfectPoints = 24;
+  private const int EarlyPoints = 10;
+  private const int LatePoints = 12;
 
   public float songPositionInBeats = 0f;
 
@@ -65,6 +73,12 @@ public class GameManager : MonoBehaviour
   private int maxStreak = 0;
   public int CurrentStreak => currentStreak;
   public int MaxStreak => maxStreak;
+
+  [Header("Grading (share of the chart's maximum score)")]
+  [Tooltip("Below this share of the ceiling the run is Failed")]
+  public float goodThreshold = 0.6f;
+  [Tooltip("At or above this share the run is Superb; Perfect needs every event judged Perfect")]
+  public float superbThreshold = 0.8f;
 
   [Header("Streak Multipliers")]
   [Tooltip("Streak counts at which multiplier increases (must match multipliers array length)")]
@@ -284,6 +298,18 @@ public class GameManager : MonoBehaviour
     Debug.Log("SONG IS OVER");
     musicIsPlaying = false;
     finalScore = (int)currentScore;
+
+    int noteCount = cupConductor != null ? cupConductor.Notes.Count : 0;
+    int maxScore = Grading.MaxScore(noteCount, PerfectPoints, streakTiers, multipliers);
+    finalAccuracy = Grading.Accuracy(finalScore, maxScore);
+    finalGrade = Grading.GradeFor(finalScore, maxScore, goodThreshold, superbThreshold);
+    Debug.Log($"[Grade] {finalScore}/{maxScore} = {finalAccuracy:P1} -> {finalGrade} (perfect {OnTimeScore}, early {TooEarlyScore}, late {TooLateScore}, max streak {maxStreak})");
+  }
+
+  public int MaxScoreForChart()
+  {
+    int noteCount = cupConductor != null ? cupConductor.Notes.Count : 0;
+    return Grading.MaxScore(noteCount, PerfectPoints, streakTiers, multipliers);
   }
 
   void pauseOrResume()
@@ -316,17 +342,17 @@ public class GameManager : MonoBehaviour
     {
       case BeatTiming.OnTime:
         OnTimeScore++;
-        baseScore = 24;
+        baseScore = PerfectPoints;
         isHit = true;
         break;
       case BeatTiming.TooEarly:
         TooEarlyScore++;
-        baseScore = 10;
+        baseScore = EarlyPoints;
         isHit = true; // Early/late still count as hits for streak
         break;
       case BeatTiming.TooLate:
         TooLateScore++;
-        baseScore = 12;
+        baseScore = LatePoints;
         isHit = true;
         break;
       case BeatTiming.Miss:

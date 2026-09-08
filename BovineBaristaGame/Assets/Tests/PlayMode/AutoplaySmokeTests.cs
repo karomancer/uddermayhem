@@ -166,7 +166,11 @@ public class AutoplaySmokeTests
         int doneCount = notes.Count(n => n.state == NoteState.Done);
         Assert.AreEqual(doneCount, streak, "streak should equal the number of completed notes");
 
-        Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}");
+        int maxScore = (int)GameManagerType.GetMethod("MaxScoreForChart").Invoke(gameManager, null);
+        Assert.AreEqual(27480, maxScore, "the Hard chart's ceiling (164 notes, 24 points, tiers 10/25/50)");
+        int score = (int)GameManagerType.GetProperty("CurrentScore").GetValue(gameManager);
+        Assert.Greater(score, 0, "autoplay should have scored");
+        Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}, score {score}/{maxScore}");
     }
 
     // Captures at every size in UDDER_SMOKE_SIZE ("1280x720,1692x772"), else at the batchmode screen size.
