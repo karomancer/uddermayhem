@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Home Mode (network ON)
+Comment=Enable wifi + bluetooth and reboot. Use at home for dev/SSH.
+Exec=/home/uddermayhem/home-mode.sh
+Icon=network-wireless
+Terminal=true
+Type=Application
+Categories=System;

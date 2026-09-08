@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Udder Mayhem
+Comment=Launch the game on boot
+Exec=/home/uddermayhem/LAUNCH.sh
+Icon=applications-games
+Terminal=false
+Type=Application
+Categories=Game;
+X-GNOME-Autostart-enabled=true

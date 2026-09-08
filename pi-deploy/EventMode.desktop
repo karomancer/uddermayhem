@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Event Mode (network OFF)
+Comment=Disable wifi + bluetooth and reboot. Use before packing up for an event.
+Exec=/home/uddermayhem/event-mode.sh
+Icon=network-wireless-disabled
+Terminal=true
+Type=Application
+Categories=System;

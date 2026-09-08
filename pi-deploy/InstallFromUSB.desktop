@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Install from USB
+Comment=Install a new Udder Mayhem build from a USB drive and reboot
+Exec=/home/uddermayhem/install-from-usb.sh
+Icon=drive-removable-media-usb
+Terminal=true
+Type=Application
+Categories=Utility;

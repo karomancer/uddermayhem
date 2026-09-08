@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Udder Mayhem
-Comment=Launch the game
-Exec=/home/uddermayhem/Desktop/LAUNCH.sh
+Name=Launch Game (manual)
+Comment=Manually launch Udder Mayhem. Only needed if autostart failed.
+Exec=/home/uddermayhem/LAUNCH.sh
 Icon=applications-games
 Terminal=true
 Type=Application

@@ -8,7 +8,7 @@ python3 -m http.server 8080 &
 SERVER_PID=$!
 
 sleep 1
-chromium-browser --kiosk --noerrdialogs http://localhost:8080
+chromium --kiosk --noerrdialogs "http://localhost:8080/?v=$(date +%s)"
 
 # When Chromium closes, kill the server
 kill $SERVER_PID
