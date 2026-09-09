@@ -104,7 +104,7 @@ public class CoffeeController : MonoBehaviour
     if (beat < schedule.arriveBeat)
     {
       float t = Progress(beat - schedule.spawnBeat, conductor.enterBeats);
-      SetPosition(Mathf.Lerp(conductor.OffscreenLeftX, anchor.x, EaseOutCubic(t)), anchor.y);
+      SetPosition(Mathf.Lerp(conductor.OffscreenLeftX, anchor.x, EaseOutQuad(t)), anchor.y);
     }
     else if (beat < schedule.departBeat)
     {
@@ -332,6 +332,12 @@ public class CoffeeController : MonoBehaviour
   private static float Progress(float elapsedBeats, float durationBeats)
   {
     return durationBeats <= 0f ? 1f : Mathf.Clamp01(elapsedBeats / durationBeats);
+  }
+
+  // Quadratic: 75% of the way at half time, so the dash across the counter takes most of the slide
+  private static float EaseOutQuad(float t)
+  {
+    return 1f - (1f - t) * (1f - t);
   }
 
   private static float EaseOutCubic(float t)

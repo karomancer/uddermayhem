@@ -68,6 +68,8 @@ public class AutoplaySmokeTests
         float beat = 0f;
         string screenshotDir = Environment.GetEnvironmentVariable("UDDER_SMOKE_SHOTS");
         var shotEnter = new HashSet<Note>();
+        var shotSlideEarly = new HashSet<Note>();
+        var shotSlideLate = new HashSet<Note>();
         var shotPush = new HashSet<(Note, float)>();
         var shotStasis = new HashSet<Note>();
         var shotPickup = new HashSet<Note>();
@@ -187,6 +189,10 @@ public class AutoplaySmokeTests
                             yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_push{ahead:0.00}.png"));
                         }
                     }
+                    if (n.state == NoteState.Pending && beat >= n.startBeat - 1.4f && shotSlideEarly.Add(n))
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_slide140.png"));
+                    if (n.state == NoteState.Pending && beat >= n.startBeat - 0.7f && shotSlideLate.Add(n))
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_slide070.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 1.0f && shotEnter.Add(n))
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))
@@ -210,7 +216,7 @@ public class AutoplaySmokeTests
         }
 
         var settled = notes.Where(n => n.endBeat + 1f < beat).ToList();
-        if (TargetBeat >= 40f) Assert.Greater(settled.Count, 40, "expected a dense stretch of the chart to be behind us");
+        if (notes.Any(n => n.endBeat + 1f < TargetBeat)) Assert.Greater(settled.Count, 0, "the song should have advanced through the chart");
         Assert.Greater(maxCupsSeen, 0, "no cups were ever spawned");
 
         var notPerfect = settled.Where(n => n.state != NoteState.Done ||

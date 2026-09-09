@@ -40,7 +40,7 @@ public class CupConductor : MonoBehaviour
   [Tooltip("How many beats before its note a cup arrives and stops (a pickup before the hit)")]
   public float arriveLeadBeats = 0.5f;
   [Tooltip("How many beats the slide in takes")]
-  public float enterBeats = 0.5f;
+  public float enterBeats = 1f;
   [Tooltip("How many beats the exit takes")]
   public float exitBeats = 0.5f;
   [Tooltip("How many beats a finished cup stays before leaving")]

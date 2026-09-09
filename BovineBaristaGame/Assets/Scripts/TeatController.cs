@@ -20,17 +20,18 @@ public class TeatController : MonoBehaviour
     public float maxSwingDegrees = 22f;
     [Tooltip("Gap kept between the tip and a passing rim wall, in world units")]
     public float pushMargin = 0.15f;
-    [Tooltip("Spring stiffness of the hang once released (higher = quicker return)")]
-    public float swingStiffness = 180f;
-    [Tooltip("Spring damping once released (lower = more overshoot)")]
-    public float swingDamping = 14f;
+    [Tooltip("How quickly the teat follows a pushing rim, in degrees per second")]
+    public float swingFollowSpeed = 400f;
+    [Tooltip("Once released the teat eases back to hanging over this many beats: slow to start, snapping into place at the end")]
+    public float swingReturnBeats = 0.5f;
 
     public float SwingAngle => swingAngle;
 
     private Quaternion restLocalRotation;
     private float swingSign = 1f;
     private float swingAngle;
-    private float swingVelocity;
+    private float releaseAngle;
+    private float releaseTime = -1f;
 
     private MilkStream stream;
     private CupConductor conductor;
@@ -208,8 +209,20 @@ public class TeatController : MonoBehaviour
         }
 
         float target = maxSwingDegrees * pushScale;
-        swingVelocity += (swingStiffness * (target - swingAngle) - swingDamping * swingVelocity) * Time.deltaTime;
-        swingAngle += swingVelocity * Time.deltaTime;
+        if (target > 0f)
+        {
+            // Pushed: follow the rim, no return in progress
+            swingAngle = Mathf.MoveTowards(swingAngle, target, swingFollowSpeed * Time.deltaTime);
+            releaseTime = -1f;
+        }
+        else if (swingAngle > 0f)
+        {
+            if (releaseTime < 0f) { releaseTime = Time.time; releaseAngle = swingAngle; }
+            float duration = Mathf.Max(0.01f, swingReturnBeats * CupConductor.SecPerBeat);
+            float t = Mathf.Clamp01((Time.time - releaseTime) / duration);
+            swingAngle = releaseAngle * (1f - t * t);
+            if (t >= 1f) { swingAngle = 0f; releaseTime = -1f; }
+        }
         transform.localRotation = restLocalRotation * Quaternion.Euler(0f, 0f, swingSign * swingAngle);
     }
 

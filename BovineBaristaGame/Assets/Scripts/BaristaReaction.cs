@@ -2,21 +2,21 @@ using UnityEngine;
 
 /// <summary>
 /// The barista's reaction bubble in the top-left corner. When the running score locks in a grade band
-/// (OK at goodThreshold, Superb at superbThreshold of the chart's ceiling) it plays a three-frame beat:
-/// frame 0 on the next beat, frame 1 half a beat later, frame 2 on the beat after that, held, then gone.
+/// (OK at goodThreshold, Superb at superbThreshold of the chart's ceiling) it plays three frames over one
+/// measure: frame 0 for a beat, frame 1 for half a beat, frame 2 for two and a half, then gone.
 /// Pinned to the camera's top-left corner in world units so it sits the same at any aspect ratio.
 /// </summary>
 public class BaristaReaction : MonoBehaviour
 {
-    [Header("Frames: 0 on the beat, 1 half a beat later, 2 on the next beat (held)")]
+    [Header("Frames: 0 standing, 1 transition, 2 thumbs up")]
     public Sprite[] okFrames;
     public Sprite[] superbFrames;
 
     [Header("Timing (beats from the first frame)")]
-    public float secondFrameBeat = 0.5f;
-    public float thirdFrameBeat = 1f;
+    public float secondFrameBeat = 1f;
+    public float thirdFrameBeat = 1.5f;
     [Tooltip("How long the last frame stays up")]
-    public float holdBeats = 7f;
+    public float holdBeats = 2.5f;
 
     [Header("Placement")]
     [Tooltip("Bubble centre from the camera's top-left corner, in world units (+x right, -y down)")]
