@@ -1,14 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public enum TeatPosition
-{
-    FrontLeft,
-    FrontRight,
-    BackLeft,
-    BackRight
-}
-
 public class TeatController : MonoBehaviour
 {
     [Header("Input Configuration")]
@@ -17,28 +9,20 @@ public class TeatController : MonoBehaviour
     [Header("Legacy Input (optional fallback)")]
     public KeyCode keyPress;
 
+    public bool IsSqueezing => isSqueezing;
+
     private bool isSqueezing = false;
 
     private Animator animator;
-
-    private new BoxCollider2D collider;
-    private Vector3 defaultColliderSize;
 
     private GameManager gameManager;
 
     private InputAction inputAction;
 
-    // Track song position at press/release for accurate timing
-    public float songPositionAtPress { get; private set; }
-    public float songPositionAtRelease { get; private set; }
-
     void Start()
     {
         animator = gameObject.GetComponent<Animator>();
-        collider = gameObject.GetComponent<BoxCollider2D>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-
-        defaultColliderSize = collider.size;
 
         // Get the appropriate input action based on teat position
         SetupInputAction();
@@ -88,47 +72,21 @@ public class TeatController : MonoBehaviour
 
     private void OnSqueezeStarted(InputAction.CallbackContext context)
     {
-        if (!isSqueezing)
-        {
-            isSqueezing = true;
-            songPositionAtPress = gameManager.songPositionInBeats;
-            collider.size = new Vector3(defaultColliderSize.x * 1.5f, defaultColliderSize.y * 2f, 0.0f);
-            animator.SetBool("isSqueezing", isSqueezing);
-        }
+        Press();
     }
 
     private void OnSqueezeCanceled(InputAction.CallbackContext context)
     {
-        if (isSqueezing)
-        {
-            isSqueezing = false;
-            songPositionAtRelease = gameManager.songPositionInBeats;
-            collider.size = defaultColliderSize;
-            animator.SetBool("isSqueezing", isSqueezing);
-        }
+        Release();
     }
 
     void Update()
     {
         // Fallback to legacy input if InputManager not available
-        if (inputAction == null)
-        {
-            if (Input.GetKeyDown(keyPress))
-            {
-                isSqueezing = true;
-                songPositionAtPress = gameManager.songPositionInBeats;
-                collider.size = new Vector3(defaultColliderSize.x * 1.5f, defaultColliderSize.y * 2f, 0.0f);
-            }
+        if (inputAction != null) return;
 
-            if (Input.GetKeyUp(keyPress))
-            {
-                isSqueezing = false;
-                songPositionAtRelease = gameManager.songPositionInBeats;
-                collider.size = defaultColliderSize;
-            }
-
-            animator.SetBool("isSqueezing", isSqueezing);
-        }
+        if (Input.GetKeyDown(keyPress)) Press();
+        if (Input.GetKeyUp(keyPress)) Release();
     }
 
     /// <summary>
@@ -136,21 +94,23 @@ public class TeatController : MonoBehaviour
     /// </summary>
     public void SetSqueezing(bool squeezing)
     {
-        if (squeezing && !isSqueezing)
-        {
-            // Simulate key down
-            isSqueezing = true;
-            songPositionAtPress = gameManager.songPositionInBeats;
-            collider.size = new Vector3(defaultColliderSize.x * 1.5f, defaultColliderSize.y * 2f, 0.0f);
-        }
-        else if (!squeezing && isSqueezing)
-        {
-            // Simulate key up
-            isSqueezing = false;
-            songPositionAtRelease = gameManager.songPositionInBeats;
-            collider.size = defaultColliderSize;
-        }
+        if (squeezing) Press();
+        else Release();
+    }
 
-        animator.SetBool("isSqueezing", isSqueezing);
+    private void Press()
+    {
+        if (isSqueezing) return;
+        isSqueezing = true;
+        animator.SetBool("isSqueezing", true);
+        gameManager.Judge?.Press(teatPosition, gameManager.CurrentInputBeat);
+    }
+
+    private void Release()
+    {
+        if (!isSqueezing) return;
+        isSqueezing = false;
+        animator.SetBool("isSqueezing", false);
+        gameManager.Judge?.Release(teatPosition, gameManager.CurrentInputBeat);
     }
 }

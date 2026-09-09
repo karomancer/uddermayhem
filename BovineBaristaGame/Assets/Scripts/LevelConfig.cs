@@ -26,8 +26,8 @@ public class LevelConfig : ScriptableObject
     [Tooltip("Speed multiplier for cup movement, etc.")]
     public float speedMultiplier = 1f;
 
-    [Tooltip("How forgiving the timing windows are (1 = normal, higher = easier)")]
-    public float timingLeniency = 1f;
+    [Tooltip("Hit windows in seconds; tune per difficulty")]
+    public TimingWindows timing = TimingWindows.Default;
 
     [Header("Visual Effect Thresholds")]
     [Tooltip("Score required before cow bouncing starts (0 = always bounce)")]

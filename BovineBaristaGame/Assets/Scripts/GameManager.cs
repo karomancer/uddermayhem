@@ -5,14 +5,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-public enum BeatTiming
-{
-  TooEarly,
-  OnTime,
-  TooLate,
-  Miss
-}
-
 public class GameManager : MonoBehaviour
 {
   // Events for other systems to subscribe to
@@ -27,11 +19,10 @@ public class GameManager : MonoBehaviour
   private static int finalScore = 0;
   public static int FinalScore => finalScore;
 
-  public float beatAllowance = 0.5f;
   public float songPositionInBeats = 0f;
 
-  //How many seconds have passed since the song started
-  public float dspSongTime;
+  //The dsp time at which the song started
+  public double dspSongTime;
 
   //The offset to the first beat of the song in seconds
   public float firstBeatOffset = 0;
@@ -45,6 +36,8 @@ public class GameManager : MonoBehaviour
   private bool shouldShowScore = false;
 
   private CupConductor cupConductor;
+
+  public LaneJudge Judge { get; private set; }
 
   public TMP_Text ScoreText;
   public TMP_Text StreakText; // Optional UI for streak display
@@ -94,7 +87,7 @@ public class GameManager : MonoBehaviour
 
   void Start()
   {
-    dspSongTime = (float)AudioSettings.dspTime;
+    dspSongTime = AudioSettings.dspTime;
     ScoreText.text = "";
     if (CountdownText != null)
     {
@@ -175,6 +168,7 @@ public class GameManager : MonoBehaviour
         ScoreText.text = $"Tip jar: ${tips:F2}";
       }
 
+      Judge?.Tick(songPositionInBeats);
       cupConductor.Conduct(songPositionInBeats);
     }
 
@@ -276,7 +270,8 @@ public class GameManager : MonoBehaviour
     Debug.Log($"StartSong called. Clip: {music.clip?.name}, Length: {music.clip?.length}");
     music.Play();
     // Capture dspTime right after Play() for accurate sync
-    dspSongTime = (startTime < 0) ? (float)AudioSettings.dspTime : startTime;
+    dspSongTime = (startTime < 0) ? AudioSettings.dspTime : startTime;
+    EnsureJudge();
     keysAreDisabled = false;
     musicIsPlaying = true;
     Invoke("songIsOver", music.clip.length);
@@ -301,7 +296,7 @@ public class GameManager : MonoBehaviour
     {
       music.Play();
       musicIsPlaying = true;
-      dspSongTime = (float)AudioSettings.dspTime;
+      dspSongTime = AudioSettings.dspTime;
     }
   }
 
@@ -406,68 +401,41 @@ public class GameManager : MonoBehaviour
     }
   }
 
-  // Called by CoffeeController when a cup exits without being hit
-  public void ReportMiss()
-  {
-    SubmitCustomerFeedback(BeatTiming.Miss);
-  }
-
   void GotToTitleScene() {
     SceneManager.LoadScene("EndScreen");
   }
 
-  public BeatTiming IsOnBeat()
+  public float BeatAtDspTime(double dspTime)
   {
-    float currentPosition = (float)(AudioSettings.dspTime - dspSongTime - firstBeatOffset);
-    float hit = currentPosition % CupConductor.SecPerBeat;
-    float nearestBeat = Mathf.Round(currentPosition % CupConductor.SecPerBeat);
-
-    if (hit < beatAllowance)
-    {
-      Debug.Log("Hit!");
-      return BeatTiming.OnTime;
-    }
-
-    if (currentPosition > nearestBeat)
-    {
-      Debug.Log("Late!");
-      return BeatTiming.TooLate;
-    }
-
-    Debug.Log("Early!");
-    return BeatTiming.TooEarly;
-
+    return (float)((dspTime - dspSongTime - firstBeatOffset) / CupConductor.SecPerBeat);
   }
 
-  public BeatTiming IsOnBeat(int measure, float beat)
+  // Beat position of an input happening right now, shifted by the cabinet's calibrated input latency
+  public float CurrentInputBeat => BeatAtDspTime(AudioSettings.dspTime - TimingSettings.InputOffsetSeconds);
+
+  private void EnsureJudge()
   {
-    return IsOnBeat(measure, beat, songPositionInBeats);
+    if (Judge != null) return;
+
+    TimingWindows windows = currentLevelConfig != null ? currentLevelConfig.timing : TimingWindows.Default;
+    Judge = new LaneJudge(cupConductor.Notes, windows, CupConductor.SecPerBeat);
+    Judge.OnPressJudged += HandlePressJudged;
+    Judge.OnReleaseJudged += HandleReleaseJudged;
+    Judge.OnMissed += HandleMissed;
   }
 
-  public BeatTiming IsOnBeat(int measure, float beat, float inputSongPosition)
+  private void HandlePressJudged(Note note, BeatTiming timing)
   {
-    return IsOnBeat(measure, beat, inputSongPosition, affectStreak: true);
+    SubmitCustomerFeedback(timing, affectStreak: false);
   }
 
-  public BeatTiming IsOnBeat(int measure, float beat, float inputSongPosition, bool affectStreak)
+  private void HandleReleaseJudged(Note note, BeatTiming timing)
   {
-    float expectedSongPosition = (measure * 4) + beat - 1;
-    bool isAcceptablyEarly = inputSongPosition > (expectedSongPosition - beatAllowance);
-    bool isAcceptablyLate = inputSongPosition < (expectedSongPosition + beatAllowance);
-    Debug.Log("Expected " + expectedSongPosition + " Got: " + inputSongPosition);
-    if (isAcceptablyEarly && isAcceptablyLate)
-    {
-      SubmitCustomerFeedback(BeatTiming.OnTime, affectStreak);
-      return BeatTiming.OnTime;
-    }
+    SubmitCustomerFeedback(timing, affectStreak: true);
+  }
 
-    if (!isAcceptablyLate)
-    {
-      SubmitCustomerFeedback(BeatTiming.TooLate, affectStreak);
-      return BeatTiming.TooLate;
-    }
-
-    SubmitCustomerFeedback(BeatTiming.TooEarly, affectStreak);
-    return BeatTiming.TooEarly;
+  private void HandleMissed(Note note)
+  {
+    SubmitCustomerFeedback(BeatTiming.Miss);
   }
 }

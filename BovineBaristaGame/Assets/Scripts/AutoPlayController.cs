@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// Handles automatic note hitting during attract mode gameplay.
-/// Watches for cups and triggers the corresponding teats at the right timing.
+/// Squeezes each lane's teat exactly for the duration of its notes.
 /// </summary>
 public class AutoPlayController : MonoBehaviour
 {
@@ -16,10 +16,11 @@ public class AutoPlayController : MonoBehaviour
     public float fadeOutTime = 25f;  // Seconds into song before fading out
 
     private GameManager gameManager;
-    private Dictionary<string, TeatController> teatControllers;
-    private HashSet<int> processedCups = new HashSet<int>();
+    private CupConductor cupConductor;
+    private readonly TeatController[] teatsByLane = new TeatController[4];
+    private readonly List<Note> dueNotes = new List<Note>();
+    private int nextNoteIndex = 0;
     private bool isActive = false;
-    private float songStartTime;
 
     void Start()
     {
@@ -35,28 +36,17 @@ public class AutoPlayController : MonoBehaviour
 
         isActive = true;
 
-        // Get GameManager reference
         GameObject gmObj = GameObject.Find("GameManager");
         if (gmObj != null)
         {
             gameManager = gmObj.GetComponent<GameManager>();
+            cupConductor = gmObj.GetComponent<CupConductor>();
         }
 
-        // Build teat controller lookup
-        teatControllers = new Dictionary<string, TeatController>();
-        TeatController[] teats = FindObjectsOfType<TeatController>();
-        foreach (var teat in teats)
+        foreach (TeatController teat in FindObjectsOfType<TeatController>())
         {
-            // Extract teat type from name (e.g., "Teat_BackLeft" -> "BackLeft")
-            string teatName = teat.gameObject.name;
-            if (teatName.Contains("_"))
-            {
-                string teatType = teatName.Split('_')[1];
-                teatControllers[teatType] = teat;
-            }
+            teatsByLane[(int)teat.teatPosition] = teat;
         }
-
-        Debug.Log($"AutoPlayController: Found {teatControllers.Count} teat controllers");
 
         // Start fade-out timer only if in attract mode (not for forceAutoPlay)
         if (AttractModeManager.IsAttractModeActive)
@@ -67,53 +57,44 @@ public class AutoPlayController : MonoBehaviour
 
     void Update()
     {
-        if (!isActive || gameManager == null) return;
+        if (!isActive || gameManager == null || gameManager.Judge == null) return;
 
         float currentBeat = gameManager.songPositionInBeats;
-        AutoHitNotesInWindow(currentBeat);
-    }
+        IReadOnlyList<Note> notes = cupConductor.Notes;
 
-    private void AutoHitNotesInWindow(float currentBeat)
-    {
-        // Find all active cups in the scene
-        CoffeeController[] activeCups = FindObjectsOfType<CoffeeController>();
-
-        foreach (var cup in activeCups)
+        while (nextNoteIndex < notes.Count && notes[nextNoteIndex].startBeat <= currentBeat)
         {
-            // Skip if we've already handled this cup
-            int cupId = cup.GetInstanceID();
-            if (processedCups.Contains(cupId)) continue;
+            dueNotes.Add(notes[nextNoteIndex]);
+            nextNoteIndex++;
+        }
 
-            // Calculate the target beat for this cup
-            float targetBeat = (cup.measure * 4) + cup.beatInMeasure - 1;
-
-            // Check if we're at the right time to hit (within a small window)
-            float timingWindow = 0.15f;  // Slightly early to ensure we catch it
-            if (currentBeat >= targetBeat - timingWindow && currentBeat <= targetBeat + timingWindow)
+        // A lane still releasing its previous note retries next frame instead of skipping the note
+        for (int i = dueNotes.Count - 1; i >= 0; i--)
+        {
+            Note note = dueNotes[i];
+            if (note.state != NoteState.Pending)
             {
-                processedCups.Add(cupId);
-
-                // Find and activate the correct teat
-                string cupType = cup.CupTagName;
-                if (cupType != null && teatControllers.ContainsKey(cupType))
-                {
-                    TeatController teat = teatControllers[cupType];
-                    StartCoroutine(SimulateTeatPress(teat, cup.duration));
-                }
+                dueNotes.RemoveAt(i);
+                continue;
             }
+
+            TeatController teat = teatsByLane[(int)note.lane];
+            if (teat == null || teat.IsSqueezing) continue;
+
+            StartCoroutine(HoldNote(teat, note));
+            dueNotes.RemoveAt(i);
         }
     }
 
-    private IEnumerator SimulateTeatPress(TeatController teat, float noteDuration)
+    private IEnumerator HoldNote(TeatController teat, Note note)
     {
-        // Press the teat
         teat.SetSqueezing(true);
 
-        // Hold for duration minus small buffer (release after cup enters but before it exits)
-        float holdTime = noteDuration * CupConductor.SecPerBeat * 0.8f;
-        yield return new WaitForSeconds(holdTime);
+        while (gameManager.songPositionInBeats < note.endBeat)
+        {
+            yield return null;
+        }
 
-        // Release the teat
         teat.SetSqueezing(false);
     }
 

@@ -19,7 +19,11 @@ MonoBehaviour:
   showTutorial: 1
   noteChart: {fileID: 4900000, guid: 32b10949891414469a659778cd0217cc, type: 3}
   speedMultiplier: 1
-  timingLeniency: 1
+  timing:
+    pressPerfect: 0.25
+    pressHit: 0.4
+    releasePerfect: 0.25
+    releaseHit: 0.4
   cowBounceScoreThreshold: 0
   scoreTextPulseScoreThreshold: 2500
   streakTextPulseScoreThreshold: 20
