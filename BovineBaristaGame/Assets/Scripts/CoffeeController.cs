@@ -6,6 +6,7 @@ public class CoffeeController : MonoBehaviour
 {
   public Note Note => schedule?.note;
   public TeatPosition Lane => schedule.note.lane;
+  public CupSize Size => schedule?.size;
 
   private static readonly List<CoffeeController> active = new List<CoffeeController>();
   public static IReadOnlyList<CoffeeController> Active => active;

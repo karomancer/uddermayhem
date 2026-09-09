@@ -12,6 +12,8 @@ public class CupSize : ScriptableObject
     public float arriveLeadBeatsOverride = 0f;
     [Tooltip("Extra scale for this size's art on top of CupConductor.cupScale")]
     public float scaleMultiplier = 1f;
+    [Tooltip("How far the teat swings aside for this cup when its rim passes under the tip: 1 = the teat's full swing, 0 = none")]
+    public float teatSwingScale = 1f;
     [Tooltip("Where the cup's foot sits in the art, in sprite units from the artboard centre (negative = below); 0 = centre the art on the lane anchor")]
     public float footY = 0f;
 

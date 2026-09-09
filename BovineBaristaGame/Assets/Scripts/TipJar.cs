@@ -13,11 +13,26 @@ using UnityEngine.U2D.Animation;
 /// </summary>
 public class TipJar : MonoBehaviour
 {
+    public enum CoinFillMode { ScoreShare, GradeBands }
+
     [Header("Layers (same artboard)")]
     public Sprite jarBack;
     public Sprite jarFront;
     public Sprite handleBack;
     public Sprite handleFront;
+    public Sprite coinBody;
+    [Tooltip("Top of the pile: while the jar is dancing the frames alternate every beat; otherwise frame 0")]
+    public Sprite[] coinTopFrames;
+
+    [Header("Coins (need the coins bone written by Udder Mayhem > Rig Tip Jar)")]
+    [Tooltip("ScoreShare: the pile height is the score as a share of the chart's ceiling. GradeBands: 1/3 when OK is locked in, 2/3 at Superb, full only for a perfect run")]
+    public CoinFillMode coinFillMode = CoinFillMode.ScoreShare;
+    [Tooltip("The pile rises in this many discrete steps (ScoreShare mode)")]
+    public int coinSteps = 20;
+    [Tooltip("Distance along the jar's axis from the pile's full position (its top at the jar's shoulder) down to fully hidden below the screen edge, in sprite units")]
+    public float coinTravel = 7.2f;
+    [Tooltip("How fast the pile moves to a new level, in levels per second")]
+    public float coinRiseSpeed = 2f;
 
     [Header("Handle")]
     [Tooltip("Degrees to swing the handle about its hooks; 0 = as drawn")]
@@ -25,15 +40,15 @@ public class TipJar : MonoBehaviour
 
     [Header("Placement")]
     [Tooltip("Jar (artboard) centre measured from the camera's bottom-left corner, in world units; the screen is always 2 x orthographic size tall")]
-    public Vector2 cornerOffset = new Vector2(2.44f, 0.67f);
+    public Vector2 cornerOffset = new Vector2(2.1f, 0.67f);
     [Tooltip("How wide the jar art is on screen, in world units")]
-    public float worldWidth = 6.55f;
+    public float worldWidth = 5.57f;
 
     [Header("Tips number")]
     [Tooltip("Move the score text so it stays beside the TIPS plate at any resolution")]
     public bool placeScoreText = true;
     [Tooltip("Bottom-left corner of the score text's rect, measured from the jar centre in world units")]
-    public Vector2 scoreTextOffset = new Vector2(-0.06f, -0.72f);
+    public Vector2 scoreTextOffset = new Vector2(-0.02f, -0.72f);
 
     [Header("Entrance")]
     [Tooltip("The jar waits below the screen until the score is shown (after the tutorial), then slides up over this many beats")]
@@ -59,9 +74,16 @@ public class TipJar : MonoBehaviour
 
     private SpriteRenderer jarBackRenderer;
     private SpriteRenderer jarFrontRenderer;
+    private SpriteRenderer coinBodyRenderer;
+    private SpriteRenderer coinTopRenderer;
     private Transform boneBase;
     private Transform boneBelly;
+    private Transform coinRoot;
     private float amplitude;
+    private bool dancing;
+    private float coinLevel;
+
+    public float CoinLevel => coinLevel;
 
     private SpriteRenderer handleBackRenderer;
     private SpriteRenderer handleFrontRenderer;
@@ -75,8 +97,10 @@ public class TipJar : MonoBehaviour
     {
         Layer("HandleBack", handleBack, 0, out handleBackRenderer);
         Layer("JarBack", jarBack, 1, out jarBackRenderer);
-        Layer("JarFront", jarFront, 3, out jarFrontRenderer);
-        Layer("HandleFront", handleFront, 4, out handleFrontRenderer);
+        Layer("CoinBody", coinBody, 2, out coinBodyRenderer);
+        Layer("CoinTop", coinTopFrames != null && coinTopFrames.Length > 0 ? coinTopFrames[0] : null, 3, out coinTopRenderer);
+        Layer("JarFront", jarFront, 4, out jarFrontRenderer);
+        Layer("HandleFront", handleFront, 5, out handleFrontRenderer);
         BuildRig();
     }
 
@@ -105,6 +129,17 @@ public class TipJar : MonoBehaviour
 
         Skin(jarFrontRenderer, root, transforms);
         if (jarBackRenderer != null && jarBack != null && jarBack.GetBindPoses().Length == bones.Length) Skin(jarBackRenderer, root, transforms);
+
+        // The coin pile hangs off the base bone in the same pose, so it squashes with the jar and slides along its axis
+        if (boneBase != null && coinBody != null && coinBody.GetBindPoses().Length == 1)
+        {
+            coinRoot = new GameObject("coins").transform;
+            coinRoot.SetParent(boneBase, false);
+            var coinBones = new[] { coinRoot };
+            if (coinBodyRenderer != null) Skin(coinBodyRenderer, coinRoot, coinBones);
+            if (coinTopRenderer != null && coinTopRenderer.sprite != null && coinTopRenderer.sprite.GetBindPoses().Length == 1) Skin(coinTopRenderer, coinRoot, coinBones);
+            coinRoot.localPosition = new Vector3(-coinTravel, 0f, 0f);
+        }
     }
 
     // SpriteSkin's bone setters are internal (the Skinning Editor normally fills them), so bind through reflection
@@ -135,6 +170,7 @@ public class TipJar : MonoBehaviour
             int tier = Mathf.Clamp(gameManager.CurrentMultiplier - 1, 0, bounceByMultiplier.Length - 1);
             target = bounceByMultiplier[tier];
         }
+        dancing = target > 0f;
         // Ease between tiers so a lost streak deflates the jar over a few beats rather than freezing it mid-bounce
         amplitude = Mathf.MoveTowards(amplitude, target, amplitudeChangeRate * Time.deltaTime);
         float bounce = 0f;
@@ -145,6 +181,44 @@ public class TipJar : MonoBehaviour
         }
         boneBase.localScale = new Vector3(1f - bounce, 1f + widthPerSquash * bounce, 1f);
         if (boneBelly != null) boneBelly.localScale = new Vector3(1f, 1f + bellyPerSquash * Mathf.Max(0f, bounce), 1f);
+        FillCoins();
+    }
+
+    // Pile height along the base bone's axis: hidden below the screen edge at 0, the top at the rim at 1
+    private void FillCoins()
+    {
+        if (coinRoot == null || gameManager == null) return;
+        int maxScore = gameManager.MaxScoreForChart();
+        float target = 0f;
+        if (maxScore > 0)
+        {
+            int score = gameManager.CurrentScore;
+            if (coinFillMode == CoinFillMode.ScoreShare)
+            {
+                float share = Mathf.Clamp01((float)score / maxScore);
+                target = coinSteps > 0 ? Mathf.Floor(share * coinSteps) / coinSteps : share;
+            }
+            else
+            {
+                if (score >= maxScore) target = 1f;
+                else if (score >= gameManager.superbThreshold * maxScore) target = 2f / 3f;
+                else if (score >= gameManager.goodThreshold * maxScore) target = 1f / 3f;
+            }
+        }
+        coinLevel = Mathf.MoveTowards(coinLevel, target, coinRiseSpeed * Time.deltaTime);
+        coinRoot.localPosition = new Vector3(-(1f - coinLevel) * coinTravel, 0f, 0f);
+        // The mound's stray coin tips sit well above its bulk, so an empty jar hides the pile outright
+        bool anyCoins = coinLevel > 0.001f;
+        if (coinBodyRenderer != null) coinBodyRenderer.enabled = anyCoins;
+        if (coinTopRenderer != null) coinTopRenderer.enabled = anyCoins;
+
+        // The coins jostle with the dance: while the jar bounces the top alternates frames every beat, otherwise it rests on frame 0
+        if (coinTopRenderer != null && coinTopFrames != null && coinTopFrames.Length >= 2)
+        {
+            int index = dancing && gameManager.songPositionInBeats > 0f ? Mathf.FloorToInt(gameManager.songPositionInBeats) % 2 : 0;
+            Sprite frame = coinTopFrames[index];
+            if (frame != null && coinTopRenderer.sprite != frame) coinTopRenderer.sprite = frame;
+        }
     }
 
     // LateUpdate so the bounce reads this frame's song position, after GameManager has advanced it

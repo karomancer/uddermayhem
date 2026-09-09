@@ -17,13 +17,13 @@ public class TeatController : MonoBehaviour
 
     [Header("Push")]
     [Tooltip("A cup whose rim is above the tip swings the teat aside as a rim wall passes under it; the swing is capped at this angle (degrees)")]
-    public float maxSwingDegrees = 30f;
+    public float maxSwingDegrees = 22f;
     [Tooltip("Gap kept between the tip and a passing rim wall, in world units")]
     public float pushMargin = 0.15f;
     [Tooltip("Spring stiffness of the hang once released (higher = quicker return)")]
-    public float swingStiffness = 80f;
+    public float swingStiffness = 180f;
     [Tooltip("Spring damping once released (lower = more overshoot)")]
-    public float swingDamping = 7f;
+    public float swingDamping = 14f;
 
     public float SwingAngle => swingAngle;
 
@@ -195,16 +195,19 @@ public class TeatController : MonoBehaviour
         float length = Mathf.Max(0.01f, (restTip - transform.position).magnitude);
         float reach = length * Mathf.Sin(maxSwingDegrees * Mathf.Deg2Rad);
 
-        bool pushed = false;
+        float pushScale = 0f;
         foreach (CoffeeController cup in CoffeeController.Active)
         {
             if (cup.Lane != teatPosition || cup.MotionX <= 1e-4f) continue;
             if (!cup.TryGetRim(out float left, out float right, out float top)) continue;
             if (top < restTip.y + 0.05f) continue;
-            if (right + pushMargin >= restTip.x && left <= restTip.x + reach) { pushed = true; break; }
+            if (right + pushMargin >= restTip.x && left <= restTip.x + reach)
+            {
+                pushScale = Mathf.Max(pushScale, cup.Size != null ? cup.Size.teatSwingScale : 1f);
+            }
         }
 
-        float target = pushed ? maxSwingDegrees : 0f;
+        float target = maxSwingDegrees * pushScale;
         swingVelocity += (swingStiffness * (target - swingAngle) - swingDamping * swingVelocity) * Time.deltaTime;
         swingAngle += swingVelocity * Time.deltaTime;
         transform.localRotation = restLocalRotation * Quaternion.Euler(0f, 0f, swingSign * swingAngle);

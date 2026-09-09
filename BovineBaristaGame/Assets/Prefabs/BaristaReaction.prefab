@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1002}
   - component: {fileID: 1003}
   m_Layer: 0
-  m_Name: TipJar
+  m_Name: BaristaReaction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40,26 +40,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1001}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33e28b6b1c9e4af4a29104ffba8e8a56, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c1f0a2e5b9d4e3fa8c6d1b2e4f50a93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jarBack: {fileID: 21300000, guid: 9afeba0c628644f880038cc7ccec90da, type: 3}
-  jarFront: {fileID: 21300000, guid: fd86fba454ee4a60aabe06c2522e672c, type: 3}
-  handleBack: {fileID: 0}
-  handleFront: {fileID: 0}
-  coinBody: {fileID: 21300000, guid: 0017f46975654fa19e092cb8478f3f06, type: 3}
-  coinTopFrames:
-  - {fileID: 21300000, guid: 5dada24b784544508c1e35a77c01ed64, type: 3}
-  - {fileID: 21300000, guid: c23b49a98f78408e9c309c94df0514f9, type: 3}
-  coinFillMode: 0
-  coinSteps: 20
-  coinTravel: 7.2
-  coinRiseSpeed: 2
-  handleAngle: 0
-  cornerOffset: {x: 2.1, y: 0.67}
-  worldWidth: 5.57
-  placeScoreText: 1
-  scoreTextOffset: {x: -0.02, y: -0.72}
-  slideInBeats: 1
+  okFrames:
+  - {fileID: 21300000, guid: c9ca2364ec0b4fda92c51ecef28497a9, type: 3}
+  - {fileID: 21300000, guid: b3de1e54a4114a479b249e576e2d21b3, type: 3}
+  - {fileID: 21300000, guid: cd3687ac2db449a3ad3e164190fc1a97, type: 3}
+  superbFrames: []
+  secondFrameBeat: 0.5
+  thirdFrameBeat: 1
+  holdBeats: 7
+  cornerOffset: {x: 2.5, y: -2.5}
+  bubbleWorldWidth: 4.1
+  bubblePixels: 1272
   sortingLayerName: UI
-  sortingOrder: 0
+  sortingOrder: 20

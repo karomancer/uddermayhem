@@ -16,6 +16,7 @@ MonoBehaviour:
   arriveLeadBeatsOverride: 0
   footY: -4.36
   scaleMultiplier: 0.5
+  teatSwingScale: 0.15
   defaultCup: {fileID: 21300000, guid: 95ebafb0075f45c48301df0e554607b7, type: 3}
   inProgress: []
   perfectCup: {fileID: 21300000, guid: 95ebafb0075f45c48301df0e554607b7, type: 3}

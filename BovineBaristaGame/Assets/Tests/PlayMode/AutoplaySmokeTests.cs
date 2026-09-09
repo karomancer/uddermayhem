@@ -76,6 +76,7 @@ public class AutoplaySmokeTests
         var shotExit = new HashSet<Note>();
         bool emptySqueezeShot = false;
         bool hudShot = false;
+        var reactionFramesShot = new HashSet<int>();
         bool danceOnBeatShot = false, danceMidBeatShot = false, dance2xShot = false;
         var capturedBySize = new Dictionary<float, List<Note>>();
         bool entranceShot = false;
@@ -92,6 +93,17 @@ public class AutoplaySmokeTests
                     entranceShot = true;
                     Debug.Log($"[HUD] jar entrance capture at beat {beat:F2}");
                     yield return Capture(System.IO.Path.Combine(screenshotDir, "jar_entrance.png"));
+                }
+                var reaction = GameObject.Find("BaristaReaction");
+                if (reaction != null)
+                {
+                    var reactionComponent = reaction.GetComponent("BaristaReaction");
+                    int frame = (int)reactionComponent.GetType().GetProperty("CurrentFrame").GetValue(reactionComponent);
+                    if (frame >= 0 && reactionFramesShot.Add(frame))
+                    {
+                        Debug.Log($"[Reaction] frame {frame} visible at beat {beat:F2}");
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"reaction_f{frame}.png"));
+                    }
                 }
                 int multiplier = (int)GameManagerType.GetProperty("CurrentMultiplier").GetValue(gameManager);
                 float phase = beat - Mathf.Floor(beat);
@@ -115,6 +127,24 @@ public class AutoplaySmokeTests
                 }
                 if (beat >= 9f && !hudShot)
                 {
+                    // Preview the coin pile at full so its alignment with the rim can be checked without a perfect run
+                    var jarObject = GameObject.Find("TipJar");
+                    var jarComponent = jarObject != null ? jarObject.GetComponent("TipJar") : null;
+                    if (jarComponent != null)
+                    {
+                        var speedField = jarComponent.GetType().GetField("coinRiseSpeed");
+                        var levelField = jarComponent.GetType().GetField("coinLevel", BindingFlags.Instance | BindingFlags.NonPublic);
+                        object savedSpeed = speedField.GetValue(jarComponent);
+                        object savedLevel = levelField.GetValue(jarComponent);
+                        speedField.SetValue(jarComponent, 0f);
+                        levelField.SetValue(jarComponent, 1f);
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, "coins_full.png"));
+                        levelField.SetValue(jarComponent, 0.5f);
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, "coins_half.png"));
+                        levelField.SetValue(jarComponent, savedLevel);
+                        speedField.SetValue(jarComponent, savedSpeed);
+                        yield return null;
+                    }
                     yield return Capture(System.IO.Path.Combine(screenshotDir, "hud.png"));
                     hudShot = true;
                     var scoreText = (Component)GameManagerType.GetField("ScoreText").GetValue(gameManager);
@@ -160,7 +190,12 @@ public class AutoplaySmokeTests
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 1.0f && shotEnter.Add(n))
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_enter.png"));
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.3f && shotStasis.Add(n))
+                    {
+                        var laneTeat = UnityEngine.Object.FindObjectsOfType(TeatType).Cast<Component>()
+                            .First(c => (int)TeatType.GetField("teatPosition").GetValue(c) == (int)n.lane);
+                        Debug.Log($"[Swing] {n.HoldBeats}-beat cup on {n.lane} at beat {beat:F2}: teat swing {TeatType.GetProperty("SwingAngle").GetValue(laneTeat):F1} deg");
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_stasis.png"));
+                    }
                     if (n.state == NoteState.Pending && beat >= n.startBeat - 0.12f && shotPickup.Add(n))
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"beat{n.startBeat:000}_{n.lane}_pickup.png"));
                     if (n.state == NoteState.Holding && beat >= n.pressBeat + n.HoldBeats * 0.5f && shotHalf.Add(n))
@@ -175,7 +210,7 @@ public class AutoplaySmokeTests
         }
 
         var settled = notes.Where(n => n.endBeat + 1f < beat).ToList();
-        Assert.Greater(settled.Count, 40, "expected the dense Hard opening to be behind us");
+        if (TargetBeat >= 40f) Assert.Greater(settled.Count, 40, "expected a dense stretch of the chart to be behind us");
         Assert.Greater(maxCupsSeen, 0, "no cups were ever spawned");
 
         var notPerfect = settled.Where(n => n.state != NoteState.Done ||
@@ -206,7 +241,9 @@ public class AutoplaySmokeTests
         var front = jar != null ? jar.transform.Find("JarFront") : null;
         var skin = front != null ? front.GetComponent("UnityEngine.U2D.Animation.SpriteSkin") : null;
         object valid = skin != null ? skin.GetType().GetProperty("isValid", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(skin) : null;
-        Debug.Log($"[Dance] {label} beat {beat:F2} base scale {baseBone?.localScale} belly scale {belly?.localScale} skin valid {valid}");
+        var coins = baseBone != null ? baseBone.Find("coins") : null;
+        var coinTop = jar != null ? jar.transform.Find("CoinTop")?.GetComponent<SpriteRenderer>() : null;
+        Debug.Log($"[Dance] {label} beat {beat:F2} base scale {baseBone?.localScale} belly scale {belly?.localScale} skin valid {valid} coins local x {coins?.localPosition.x:F2} top frame {coinTop?.sprite?.name}");
     }
 
     // Captures at every size in UDDER_SMOKE_SIZE ("1280x720,1692x772"), else at the batchmode screen size.

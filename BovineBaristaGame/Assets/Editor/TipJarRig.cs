@@ -13,30 +13,38 @@ public static class TipJarRig
 {
     const string FrontPath = "Assets/Sprites/TipJar/tipjar-front.png";
     const string BackPath = "Assets/Sprites/TipJar/tipjar-back.png";
+    const string CoinBodyPath = "Assets/Sprites/TipJar/tipjar-coin_body.png";
+    const string CoinTop0Path = "Assets/Sprites/TipJar/tipjar-coin_top_0.png";
+    const string CoinTop1Path = "Assets/Sprites/TipJar/tipjar-coin_top_1.png";
 
     // Sprite-rect pixels, origin bottom-left. The glass leans about 8 degrees, so the chain follows the body's axis.
     // The base sits where the jar meets the bottom of the screen (the art continues below it), so a squash
     // compresses the visible jar toward the screen edge instead of toward the hidden foot.
-    static readonly Vector2 BasePosition = new Vector2(1043f, 710f);
+    static readonly Vector2 BasePosition = new Vector2(1048f, 673f);
     const float AxisDegrees = 98f;
-    const float BaseLength = 230f;
+    const float BaseLength = 260f;
     const float BellyLength = 190f;
     const float RimLength = 700f;
-    const float BellyPeak = 230f;   // distance along the axis where the belly bone has full influence (the label)
-    const float RimPeak = 420f;     // from here up the rim bone owns the vertices, so the rim rings stay rigid
+    const float BellyPeak = 260f;   // distance along the axis where the belly bone has full influence (the label)
+    const float RimPeak = 455f;     // from here up the rim bone owns the vertices, so the rim rings stay rigid
     const int GridColumns = 16;
     const int GridRows = 14;
 
     [MenuItem("Udder Mayhem/Rig Tip Jar")]
     public static void RigAll()
     {
-        Rig(FrontPath);
-        Rig(BackPath);
+        Rig(FrontPath, glassChain: true);
+        Rig(BackPath, glassChain: true);
+        Rig(CoinBodyPath, glassChain: false);
+        Rig(CoinTop0Path, glassChain: false);
+        Rig(CoinTop1Path, glassChain: false);
         AssetDatabase.Refresh();
-        Debug.Log("[TipJarRig] rigged front and back");
+        Debug.Log("[TipJarRig] rigged front, back and coins");
     }
 
-    static void Rig(string path)
+    // The glass gets the base/belly/rim chain; the coin pile gets one bone in the base bone's pose, so at runtime
+    // it can hang under the base bone and slide along the jar's axis to show the fill level
+    static void Rig(string path, bool glassChain)
     {
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) { Debug.LogError($"[TipJarRig] no texture importer at {path}"); return; }
@@ -48,12 +56,17 @@ public static class TipJarRig
         SpriteRect rect = provider.GetSpriteRects()[0];
         GUID id = rect.spriteID;
 
-        var bones = new List<SpriteBone>
-        {
-            new SpriteBone { name = "base", guid = GUID.Generate().ToString(), position = BasePosition, rotation = Quaternion.Euler(0f, 0f, AxisDegrees), length = BaseLength, parentId = -1, color = Color.white },
-            new SpriteBone { name = "belly", guid = GUID.Generate().ToString(), position = new Vector2(BaseLength, 0f), rotation = Quaternion.identity, length = BellyLength, parentId = 0, color = Color.white },
-            new SpriteBone { name = "rim", guid = GUID.Generate().ToString(), position = new Vector2(BellyLength, 0f), rotation = Quaternion.identity, length = RimLength, parentId = 1, color = Color.white },
-        };
+        var bones = glassChain
+            ? new List<SpriteBone>
+            {
+                new SpriteBone { name = "base", guid = GUID.Generate().ToString(), position = BasePosition, rotation = Quaternion.Euler(0f, 0f, AxisDegrees), length = BaseLength, parentId = -1, color = Color.white },
+                new SpriteBone { name = "belly", guid = GUID.Generate().ToString(), position = new Vector2(BaseLength, 0f), rotation = Quaternion.identity, length = BellyLength, parentId = 0, color = Color.white },
+                new SpriteBone { name = "rim", guid = GUID.Generate().ToString(), position = new Vector2(BellyLength, 0f), rotation = Quaternion.identity, length = RimLength, parentId = 1, color = Color.white },
+            }
+            : new List<SpriteBone>
+            {
+                new SpriteBone { name = "coins", guid = GUID.Generate().ToString(), position = BasePosition, rotation = Quaternion.Euler(0f, 0f, AxisDegrees), length = BaseLength + BellyLength + RimLength, parentId = -1, color = Color.white },
+            };
         provider.GetDataProvider<ISpriteBoneDataProvider>().SetBones(id, bones);
 
         var vertices = new List<Vertex2DMetaData>();
@@ -66,7 +79,7 @@ public static class TipJarRig
             for (int c = 0; c <= GridColumns; c++)
             {
                 var p = new Vector2(width * c / GridColumns, height * r / GridRows);
-                vertices.Add(new Vertex2DMetaData { position = p, boneWeight = WeightsFor(Vector2.Dot(p - BasePosition, axis)) });
+                vertices.Add(new Vertex2DMetaData { position = p, boneWeight = glassChain ? WeightsFor(Vector2.Dot(p - BasePosition, axis)) : new BoneWeight { boneIndex0 = 0, weight0 = 1f } });
             }
         }
         int stride = GridColumns + 1;
