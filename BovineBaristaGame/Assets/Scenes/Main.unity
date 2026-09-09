@@ -1985,6 +1985,7 @@ GameObject:
   - component: {fileID: 1140662706}
   - component: {fileID: 1140662709}
   - component: {fileID: 1140662708}
+  - component: {fileID: 1140662799}
   m_Layer: 5
   m_Name: StreakText
   m_TagString: Untagged
@@ -2065,7 +2066,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -4118,6 +4119,20 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e2a9c7d1b3f4e6a8c0d2f4b6e8a1c35, type: 3}
+--- !u!114 &1140662799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140662704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4b7e2f6a1c4d8eb3f5a7c9e1d2b4f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1184395858}
+  worldOffset: {x: 0, y: 1.1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
