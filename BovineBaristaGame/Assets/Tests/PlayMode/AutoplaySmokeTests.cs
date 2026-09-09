@@ -17,9 +17,11 @@ using UnityEngine.TestTools;
 /// </summary>
 public class AutoplaySmokeTests
 {
-    private const string LevelConfigPath = "Assets/LevelConfigs/LevelConfigHard.asset";
-    private const float TargetBeat = 74f;
-    private const float RealtimeBudgetSeconds = 60f;
+    // Defaults cover the dense Hard opening; UDDER_SMOKE_LEVEL / UDDER_SMOKE_TARGET_BEAT pick another chart or stretch
+    private static readonly string LevelConfigPath = Environment.GetEnvironmentVariable("UDDER_SMOKE_LEVEL") ?? "Assets/LevelConfigs/LevelConfigHard.asset";
+    private static readonly float TargetBeat = float.TryParse(Environment.GetEnvironmentVariable("UDDER_SMOKE_TARGET_BEAT"), out float b) ? b : 74f;
+    private static readonly float RealtimeBudgetSeconds = TargetBeat + 30f;
+    private const int CapturesPerCupSize = 2;
 
     private static readonly Type GameManagerType = Type.GetType("GameManager, Assembly-CSharp");
     private static readonly Type CupConductorType = Type.GetType("CupConductor, Assembly-CSharp");
@@ -31,7 +33,7 @@ public class AutoplaySmokeTests
     public IEnumerator HardChart_AutoplayJudgesEveryNotePerfect()
     {
         var config = AssetDatabase.LoadAssetAtPath<ScriptableObject>(LevelConfigPath);
-        Assert.IsNotNull(config, "Hard level config not found");
+        Assert.IsNotNull(config, $"level config not found at {LevelConfigPath}");
         var runConfig = UnityEngine.Object.Instantiate(config);
         runConfig.GetType().GetField("showTutorial").SetValue(runConfig, false);
         GameManagerType.GetField("currentLevelConfig").SetValue(null, runConfig);
@@ -75,7 +77,7 @@ public class AutoplaySmokeTests
         bool emptySqueezeShot = false;
         bool hudShot = false;
         bool danceOnBeatShot = false, danceMidBeatShot = false, dance2xShot = false;
-        Note firstShortNote = notes.FirstOrDefault(n => n.HoldBeats < 1f);
+        var capturedBySize = new Dictionary<float, List<Note>>();
         bool entranceShot = false;
         while (beat < TargetBeat)
         {
@@ -142,7 +144,8 @@ public class AutoplaySmokeTests
                 // Quarter-note cups only: mid-hold, then just after the release
                 foreach (Note n in notes)
                 {
-                    if (n.HoldBeats < 1f && n != firstShortNote) continue;
+                    if (!capturedBySize.TryGetValue(n.HoldBeats, out var captured)) capturedBySize[n.HoldBeats] = captured = new List<Note>();
+                    if (!captured.Contains(n)) { if (captured.Count >= CapturesPerCupSize) continue; captured.Add(n); }
                     if (n.HoldBeats >= 4f)
                     {
                         foreach (float ahead in new[] { 0.85f, 0.7f, 0.55f, 0.4f })
@@ -188,7 +191,8 @@ public class AutoplaySmokeTests
         Assert.AreEqual(doneCount, streak, "streak should equal the number of completed notes");
 
         int maxScore = (int)GameManagerType.GetMethod("MaxScoreForChart").Invoke(gameManager, null);
-        Assert.AreEqual(27480, maxScore, "the Hard chart's ceiling (164 notes, 24 points, tiers 10/25/50)");
+        Assert.AreEqual(Grading.MaxScore(notes.Count, 24, new[] { 0, 10, 25, 50 }, new[] { 1, 2, 3, 4 }), maxScore, "ceiling must follow the chart's note count and the scene's tiers");
+        if (notes.Count == 164) Assert.AreEqual(27480, maxScore, "the Hard chart's ceiling");
         int score = (int)GameManagerType.GetProperty("CurrentScore").GetValue(gameManager);
         Assert.Greater(score, 0, "autoplay should have scored");
         Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}, score {score}/{maxScore}");
