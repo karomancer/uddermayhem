@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // JSON parsing classes
@@ -39,14 +40,36 @@ public class CupConductor : MonoBehaviour
   [Tooltip("How many beats before its note a cup arrives and stops (a pickup before the hit)")]
   public float arriveLeadBeats = 0.5f;
   [Tooltip("How many beats the slide in takes")]
-  public float enterBeats = 0.5f;
+  public float enterBeats = 1f;
   [Tooltip("How many beats the exit takes")]
   public float exitBeats = 0.5f;
   [Tooltip("How many beats a finished cup stays before leaving")]
   public float lingerBeats = 0.5f;
+  [Tooltip("Beats before the hit at which the cup switches to its pickup frame")]
+  public float pickupStartBeatsBeforeHit = 0.375f;
+  [Tooltip("Beats before the hit at which the pickup frame ends (0 = holds until the hit)")]
+  public float pickupEndBeatsBeforeHit = 0f;
   [Tooltip("In a dense lane, how many beats before the next cup lands the previous one starts leaving")]
   public float departClearanceBeats = 0.25f;
   public float cupScale = 0.558664f;
+  [Tooltip("Every cup's foot sits this far below its lane anchor, whatever its size (needs CupSize.footY)")]
+  public float footBelowAnchor = 1.6f;
+
+  [Header("Milk Stream")]
+  [Tooltip("Stream frames cycled while pouring; leave empty to load Resources/Stream")]
+  public Sprite[] streamFrames;
+  [Tooltip("Splash frames drawn where the milk lands, cycled with the stream; leave empty to load Resources/Splash")]
+  public Sprite[] splashFrames;
+  [Tooltip("Raises the splash above the point where the milk lands, in world units")]
+  public float splashOffsetY = 0.15f;
+  [Tooltip("Stream art scale relative to the teat it pours from")]
+  public float streamScale = 0.5f;
+  [Tooltip("How many stream frames advance per beat")]
+  public float streamFramesPerBeat = 2f;
+  [Tooltip("With no cup in the lane, milk lands this far below the lane's cup anchor; 1.37 = the L cup's resting liquid line")]
+  public float streamFloorOffset = 1.37f;
+  [Tooltip("How far up inside the teat the stream starts, in world units, so its top is hidden behind the tip")]
+  public float streamInset = 0.25f;
 
   [Header("Lanes")]
   [Tooltip("Where cups stop, indexed by TeatPosition; unassigned lanes fall back to CupTagEndVector")]
@@ -192,6 +215,30 @@ public class CupConductor : MonoBehaviour
     {TeatPosition.BackLeft, new Vector3(-3.5646f, -1.27f, 0f)},
     {TeatPosition.BackRight, new Vector3(1.13f, -1.27f, 0f)}
   };
+
+  public Sprite[] SplashFrames
+  {
+    get
+    {
+      if (splashFrames == null || splashFrames.Length == 0)
+      {
+        splashFrames = Resources.LoadAll<Sprite>("Splash").OrderBy(sprite => sprite.name).ToArray();
+      }
+      return splashFrames;
+    }
+  }
+
+  public Sprite[] StreamFrames
+  {
+    get
+    {
+      if (streamFrames == null || streamFrames.Length == 0)
+      {
+        streamFrames = Resources.LoadAll<Sprite>("Stream").OrderBy(sprite => sprite.name).ToArray();
+      }
+      return streamFrames;
+    }
+  }
 
   private readonly List<Note> notes = new List<Note>();
   public IReadOnlyList<Note> Notes => notes;
@@ -408,7 +455,7 @@ public class CupConductor : MonoBehaviour
     newCup.GetComponent<CoffeeController>().Bind(entry, gameManager, this, anchor);
   }
 
-  private Vector3 AnchorFor(TeatPosition lane)
+  public Vector3 AnchorFor(TeatPosition lane)
   {
     int index = (int)lane;
     Transform anchor = (laneAnchors != null && index < laneAnchors.Length) ? laneAnchors[index] : null;

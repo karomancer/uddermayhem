@@ -210,7 +210,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1839810077
   m_SortingLayer: 4
-  m_SortingOrder: 5
+  m_SortingOrder: 42
   m_Sprite: {fileID: 21300000, guid: 0cedf8e608647475fb31b9a2365d916f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -851,7 +851,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7617166244373836868, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
       propertyPath: m_SortingOrder
-      value: 3
+      value: 18
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1162,7 +1162,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7617166244373836868, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
       propertyPath: m_SortingOrder
-      value: 5
+      value: 38
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1592,7 +1592,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1bd677c519624ac6918671d81f6b123, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beatAllowance: 0.75
   songPositionInBeats: 0
   dspSongTime: 0
   firstBeatOffset: 0
@@ -1601,6 +1600,8 @@ MonoBehaviour:
   CountdownText: {fileID: 1366993132}
   countdownAnimDuration: 0.2
   countdownSpinRotations: 0.5
+  goodThreshold: 0.6
+  superbThreshold: 0.8
   streakTiers: 000000000a0000001900000032000000
   multipliers: 01000000020000000300000004000000
 --- !u!114 &969475426
@@ -1616,6 +1617,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cupPrefab: {fileID: 6958796372611257120, guid: e4f17c57430ff4cb9885fb043f98d09b, type: 3}
+  arriveLeadBeats: 0.5
+  enterBeats: 1
+  exitBeats: 0.5
+  lingerBeats: 0.5
+  pickupStartBeatsBeforeHit: 0.375
+  pickupEndBeatsBeforeHit: 0
+  departClearanceBeats: 0.25
+  cupScale: 0.558664
+  footBelowAnchor: 1.6
+  streamFrames: []
+  splashFrames: []
+  splashOffsetY: 0.15
+  streamScale: 0.5
+  streamFramesPerBeat: 2
+  streamFloorOffset: 1.37
+  streamInset: 0.25
+  laneAnchors:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  cupSizes: []
   debugger: {fileID: 969475429}
 --- !u!82 &969475427
 AudioSource:
@@ -1748,6 +1771,11 @@ MonoBehaviour:
   frontRightFrequency: 330
   backLeftFrequency: 392
   backRightFrequency: 523
+  showTimingReadout: 0
+  readoutToggleKey: 121
+  offsetDownKey: 91
+  offsetUpKey: 93
+  offsetStepMs: 5
 --- !u!1 &1046275913 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4114700523357831373, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
@@ -1957,6 +1985,7 @@ GameObject:
   - component: {fileID: 1140662706}
   - component: {fileID: 1140662709}
   - component: {fileID: 1140662708}
+  - component: {fileID: 1140662799}
   m_Layer: 5
   m_Name: StreakText
   m_TagString: Untagged
@@ -2037,7 +2066,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -2403,7 +2432,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1839810077
   m_SortingLayer: 4
-  m_SortingOrder: 4
+  m_SortingOrder: 24
   m_Sprite: {fileID: 21300000, guid: 8e50151abcd0b4949a840cc3fcbacec4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2617,7 +2646,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7617166244373836868, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
       propertyPath: m_SortingOrder
-      value: 3
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3380,7 +3409,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50363cb555bcd45cebee3c128ba5d7a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceAutoPlay: 0
+  forceAutoPlay: 1
   fadeOutTime: 45
 --- !u!4 &1945596136
 Transform:
@@ -3718,7 +3747,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7617166244373836868, guid: 1c2065eb857e34c3ab64819ca3146e29, type: 3}
       propertyPath: m_SortingOrder
-      value: 5
+      value: 30
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3838,6 +3867,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2118896746085844452, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_fontSize
+      value: 54
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118896746085844452, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: a981f7267bbbd41f7bc49d67feb7ebae, type: 2}
@@ -3945,6 +3978,14 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 19a273816b4f44cb2b0d91ff0d52d766, type: 3}
+    - target: {fileID: 5845256850254882347, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -169
+      objectReference: {fileID: 0}
+    - target: {fileID: 5845256850254882347, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -199
+      objectReference: {fileID: 0}
     - target: {fileID: 7704658092650127120, guid: aa6d52d8b5c504d7aa25e00feb85055e, type: 3}
       propertyPath: m_Transition
       value: 2
@@ -4032,10 +4073,72 @@ MonoBehaviour:
   saturation: 0.819
   brightness: 0.834
   outlineThickness: 0.2
+--- !u!1001 &8123456789012345001
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1001, guid: 45136779963c494ca4e13240938a0c11, type: 3}
+      propertyPath: m_Name
+      value: TipJar
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: 45136779963c494ca4e13240938a0c11, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: 45136779963c494ca4e13240938a0c11, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: 45136779963c494ca4e13240938a0c11, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 45136779963c494ca4e13240938a0c11, type: 3}
+--- !u!1001 &8123456789012345002
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1001, guid: 5e2a9c7d1b3f4e6a8c0d2f4b6e8a1c35, type: 3}
+      propertyPath: m_Name
+      value: BaristaReaction
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5e2a9c7d1b3f4e6a8c0d2f4b6e8a1c35, type: 3}
+--- !u!114 &1140662799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140662704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4b7e2f6a1c4d8eb3f5a7c9e1d2b4f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1184395858}
+  worldOffset: {x: 0, y: 1.1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 8123456789012345001}
+  - {fileID: 8123456789012345002}
   - {fileID: 519420032}
   - {fileID: 1454209237}
   - {fileID: 2144338641}

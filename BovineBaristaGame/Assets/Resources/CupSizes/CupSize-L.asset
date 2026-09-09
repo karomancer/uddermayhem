@@ -14,10 +14,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   holdBeats: 4
   arriveLeadBeatsOverride: 0
+  footY: -6.63
+  scaleMultiplier: 0.49
+  teatSwingScale: 1
   defaultCup: {fileID: -405739095, guid: b39499e3461a54d86900293b43e1bbbb, type: 3}
   inProgress:
   - {fileID: -650251781, guid: b39499e3461a54d86900293b43e1bbbb, type: 3}
   - {fileID: 30074265, guid: b39499e3461a54d86900293b43e1bbbb, type: 3}
   perfectCup: {fileID: -1015170508, guid: b39499e3461a54d86900293b43e1bbbb, type: 3}
   overfilledCup: {fileID: -1888074570, guid: b39499e3461a54d86900293b43e1bbbb, type: 3}
-  tippedCup: {fileID: -703718288, guid: b39499e3461a54d86900293b43e1bbbb, type: 3}
+  tippedCup: {fileID: 21300000, guid: 4abb806bb0404da9b4cecb559f94f4ce, type: 3}
+  glassBack: {fileID: 21300000, guid: 5b4f9ec3c9e740808d9d4f05aa8adf96, type: 3}
+  interiorMask: {fileID: 21300000, guid: edc6ebb6727745cd8c626389f2eb758a, type: 3}
+  liquidBody: {fileID: 21300000, guid: 0a55714383bf42a09dda56ecd9776f16, type: 3}
+  liquidSurface: {fileID: 21300000, guid: 71cdb7441ffb4234babfb78f3c0965d6, type: 3}
+  latteArt: {fileID: 21300000, guid: b345d682ff8c42f597f5ea2857dc9eb3, type: 3}
+  glassFront: {fileID: 21300000, guid: 84cd2df17b0340b5ae0bc61dc183bd97, type: 3}
+  overflow: {fileID: 21300000, guid: 6067c153da714cb29f339c4c35a09486, type: 3}
+  slideInCup: {fileID: 21300000, guid: 014a2c4e68f045bfbda9ce8309b44497, type: 3}
+  pickupCup: {fileID: 21300000, guid: 122b77c33ae34c0caffca03422a77a96, type: 3}
+  fillSteps: 8
+  surfaceCenterX: -0.905
+  surfaceFullY: 4.18
+  surfaceEmptyY: -5.0
+  surfaceScaleByLevel:
+  - 0.689
+  - 0.778
+  - 0.853
+  - 0.951
+  - 0.964
+  - 0.944
+  - 0.966
+  - 0.981
+  - 1.000
+  clipSurfaceToInterior: 1
+  liquidBodyOffsetY: 0
