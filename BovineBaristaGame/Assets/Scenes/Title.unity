@@ -756,6 +756,17 @@ MonoBehaviour:
   sunraysPrefab: {fileID: 5927832819781866755, guid: 588551935975b4aafb825a8707200e0f, type: 3}
   logoPrefab: {fileID: 6603092813084861626, guid: 6212ec4e7e7f341b694f3d1d81cf3c1f, type: 3}
   themeSongBpm: 100
+  musicStartDelay: 0.8
+  animationOffset: 0.6
+  sunBeat: 2
+  sunRiseBeats: 5
+  logoBeat: 7
+  popBeats: 0.5
+  logoWobbleDegrees: 4
+  raysDegreesPerBeat: 3
+  logoPulseScale: 1.02
+  raysPulseScale: 1.2
+  raysPulseDuration: 0.5
   transitionManager: {fileID: 1353688819}
 --- !u!82 &934940304
 AudioSource:
