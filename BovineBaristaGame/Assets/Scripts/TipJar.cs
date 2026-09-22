@@ -30,7 +30,7 @@ public class TipJar : MonoBehaviour
     [Tooltip("The pile rises in this many discrete steps (ScoreShare mode)")]
     public int coinSteps = 20;
     [Tooltip("Distance along the jar's axis from the pile's full position (its top at the jar's shoulder) down to fully hidden below the screen edge, in sprite units")]
-    public float coinTravel = 7.2f;
+    public float coinTravel = 6.75f;
     [Tooltip("How fast the pile moves to a new level, in levels per second")]
     public float coinRiseSpeed = 2f;
 
@@ -40,9 +40,9 @@ public class TipJar : MonoBehaviour
 
     [Header("Placement")]
     [Tooltip("Jar (artboard) centre measured from the camera's bottom-left corner, in world units; the screen is always 2 x orthographic size tall")]
-    public Vector2 cornerOffset = new Vector2(2.1f, 0.67f);
+    public Vector2 cornerOffset = new Vector2(2.1f, 0.52f);
     [Tooltip("How wide the jar art is on screen, in world units")]
-    public float worldWidth = 5.57f;
+    public float worldWidth = 5.29f;
 
     [Header("Tips number")]
     [Tooltip("Move the score text so it stays beside the TIPS plate at any resolution")]

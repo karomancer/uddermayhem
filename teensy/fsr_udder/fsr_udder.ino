@@ -1,7 +1,8 @@
-const byte FRONT_RIGHT_TEAT = A0;
-const byte FRONT_LEFT_TEAT = A1;
-const byte BACK_LEFT_TEAT = A2;
-const byte BACK_RIGHT_TEAT = A3;
+// A0 = 17, A3 = 21
+const byte FRONT_RIGHT_TEAT = A2; 
+const byte FRONT_LEFT_TEAT = A0;
+const byte BACK_LEFT_TEAT = A3;
+const byte BACK_RIGHT_TEAT = A1;
 
 const int THRESHOLD = 900;
 const int DEBOUNCE_DELAY = 50; // milliseconds

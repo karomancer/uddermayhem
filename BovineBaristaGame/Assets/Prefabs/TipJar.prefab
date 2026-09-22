@@ -53,11 +53,11 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c23b49a98f78408e9c309c94df0514f9, type: 3}
   coinFillMode: 0
   coinSteps: 20
-  coinTravel: 7.2
+  coinTravel: 6.75
   coinRiseSpeed: 2
   handleAngle: 0
-  cornerOffset: {x: 2.1, y: 0.67}
-  worldWidth: 5.57
+  cornerOffset: {x: 2.1, y: 0.52}
+  worldWidth: 5.29
   placeScoreText: 1
   scoreTextOffset: {x: -0.02, y: -0.72}
   slideInBeats: 1

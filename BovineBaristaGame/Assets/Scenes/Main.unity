@@ -148,6 +148,7 @@ GameObject:
   m_Component:
   - component: {fileID: 375785665}
   - component: {fileID: 375785666}
+  - component: {fileID: 1454209239}
   m_Layer: 0
   m_Name: Tummy
   m_TagString: Untagged
@@ -1486,7 +1487,7 @@ Transform:
   m_GameObject: {fileID: 850843830}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.20802593, y: -2.8295565, z: -0.15156484}
+  m_LocalPosition: {x: -1.68717417, y: -2.7392566, z: -0.15156484}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1494,7 +1495,7 @@ Transform:
   - {fileID: 737799223}
   - {fileID: 1333540255}
   - {fileID: 718941770}
-  m_Father: {fileID: 1454209237}
+  m_Father: {fileID: 1184395901}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &969475420
 GameObject:
@@ -2125,6 +2126,7 @@ MonoBehaviour:
   baseScale: 1.01
   intensityBonusScale: 0.1
   pulseDuration: 0.15
+  pulseDelayBeats: 0.02
   beatsPerPulse: 1
   minimumIntensity: 0
   pulseScoreThreshold: 20
@@ -2152,7 +2154,7 @@ MonoBehaviour:
   applyToOutline: 0
   speed: 1
   frequency: 0.5
-  saturation: 1
+  saturation: 0.3
   brightness: 1
   outlineThickness: 0.2
 --- !u!1 &1158945417
@@ -2386,11 +2388,11 @@ Transform:
   m_GameObject: {fileID: 1184395857}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.8952001, y: -0.090299904, z: -0.0002}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0002}
   m_LocalScale: {x: 0.70751685, y: 0.70751685, z: 0.70751685}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1454209237}
+  m_Father: {fileID: 1184395901}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1184395859
 SpriteRenderer:
@@ -3042,7 +3044,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1454209237}
   - component: {fileID: 1454209238}
-  - component: {fileID: 1454209239}
   m_Layer: 0
   m_Name: Cow
   m_TagString: Untagged
@@ -3064,9 +3065,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 375785665}
-  - {fileID: 1184395858}
+  - {fileID: 1184395901}
   - {fileID: 1347303663}
-  - {fileID: 850843831}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1454209238
@@ -3171,7 +3171,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1454209236}
+  m_GameObject: {fileID: 375785664}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90d4b00a641264d0da83a5d7ecb81eb9, type: 3}
@@ -4047,9 +4047,7 @@ MonoBehaviour:
   minimumIntensity: 0
   pulseScoreThreshold: 2500
   colorScoreThreshold: 5000
-  colors:
-  - {r: 1, g: 0.6627451, b: 0.7607843, a: 1}
-  - {r: 1, g: 1, b: 1, a: 1}
+  colors: []
   beatsPerColorChange: 2
   preserveAlpha: 1
 --- !u!114 &8106569754201296155
@@ -4133,6 +4131,64 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1184395858}
   worldOffset: {x: 0, y: 1.1}
+--- !u!1 &1184395900
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1184395901}
+  - component: {fileID: 1184395902}
+  m_Layer: 0
+  m_Name: Udder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1184395901
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1184395900}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.8952001, y: -0.090299904, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1184395858}
+  - {fileID: 850843831}
+  m_Father: {fileID: 1454209237}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1184395902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1184395900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90d4b00a641264d0da83a5d7ecb81eb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetType: 0
+  baseScale: 1.01
+  intensityBonusScale: 0.1
+  pulseDuration: 0.15
+  pulseDelayBeats: 0.04
+  beatsPerPulse: 1
+  minimumIntensity: 0
+  pulseScoreThreshold: 0
+  colorScoreThreshold: 0
+  colors: []
+  beatsPerColorChange: 1
+  preserveAlpha: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

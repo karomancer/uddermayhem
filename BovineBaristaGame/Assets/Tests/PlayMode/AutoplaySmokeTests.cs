@@ -79,6 +79,17 @@ public class AutoplaySmokeTests
         bool emptySqueezeShot = false;
         bool hudShot = false;
         var reactionFramesShot = new HashSet<string>();
+        string burstDir = Environment.GetEnvironmentVariable("UDDER_SMOKE_REACTION_BURST");
+        float burstLastBeat = -1f, burstEndBeat = -1f;
+        // UDDER_SMOKE_BURST_BEATS="8,14" also bursts continuously across that beat range
+        string burstRange = Environment.GetEnvironmentVariable("UDDER_SMOKE_BURST_BEATS");
+        float burstRangeStart = -1f, burstRangeEnd = -1f;
+        if (!string.IsNullOrEmpty(burstRange))
+        {
+            string[] parts = burstRange.Split(',');
+            burstRangeStart = float.Parse(parts[0]); burstRangeEnd = float.Parse(parts[1]);
+        }
+        var burstManifest = new List<string>();
         bool danceOnBeatShot = false, danceMidBeatShot = false, dance2xShot = false;
         var capturedBySize = new Dictionary<float, List<Note>>();
         bool entranceShot = false;
@@ -106,6 +117,21 @@ public class AutoplaySmokeTests
                     {
                         Debug.Log($"[Reaction] {reactionName} frame {frame} visible at beat {beat:F2}");
                         yield return Capture(System.IO.Path.Combine(screenshotDir, $"reaction_{reactionName}_f{frame}.png"));
+                    }
+                    // Burst mode: capture continuously from lock-in until half a beat after the bubble is gone,
+                    // recording the song beat of each frame so a GIF can be assembled at game speed
+                    if (!string.IsNullOrEmpty(burstDir))
+                    {
+                        if (!string.IsNullOrEmpty(reactionName) || (beat >= burstRangeStart && beat <= burstRangeEnd)) burstEndBeat = beat + 0.5f;
+                        if (beat <= burstEndBeat && beat - burstLastBeat >= 1f / 16f)
+                        {
+                            burstLastBeat = beat;
+                            string file = System.IO.Path.Combine(burstDir, $"burst_{burstManifest.Count:D4}.png");
+                            yield return Capture(file);
+                            float shotBeat = (float)songBeatField.GetValue(gameManager);
+                            string scales = string.Join("\t", new[] { "Tummy", "Udder", "StreakText" }.Select(n => { var o = GameObject.Find(n); return o == null ? "?" : o.transform.localScale.y.ToString("F4"); }));
+                            burstManifest.Add($"{System.IO.Path.GetFileName(file)}\t{shotBeat:F4}\t{reactionName}\t{frame}\t{scales}");
+                        }
                     }
                 }
                 int multiplier = (int)GameManagerType.GetProperty("CurrentMultiplier").GetValue(gameManager);
@@ -237,6 +263,8 @@ public class AutoplaySmokeTests
         if (notes.Count == 164) Assert.AreEqual(27480, maxScore, "the Hard chart's ceiling");
         int score = (int)GameManagerType.GetProperty("CurrentScore").GetValue(gameManager);
         Assert.Greater(score, 0, "autoplay should have scored");
+        if (!string.IsNullOrEmpty(burstDir) && burstManifest.Count > 0)
+            System.IO.File.WriteAllLines(System.IO.Path.Combine(burstDir, "manifest.tsv"), burstManifest);
         Debug.Log($"[Smoke] beat {beat:F1}: {doneCount} notes done, streak {streak}, max concurrent cups {maxCupsSeen}, score {score}/{maxScore}");
     }
 
@@ -255,7 +283,7 @@ public class AutoplaySmokeTests
 
     // Captures at every size in UDDER_SMOKE_SIZE ("1280x720,1692x772"), else at the batchmode screen size.
     // The camera renders to a texture of that size for one frame first, so the UI lays itself out for it.
-    private static IEnumerator Capture(string path)
+    internal static IEnumerator Capture(string path)
     {
         var sizes = new List<Vector2Int>();
         string spec = Environment.GetEnvironmentVariable("UDDER_SMOKE_SIZE");

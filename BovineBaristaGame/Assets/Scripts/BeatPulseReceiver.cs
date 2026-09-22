@@ -24,6 +24,8 @@ public class BeatPulseReceiver : MonoBehaviour
     public float intensityBonusScale = 0.10f;
     [Tooltip("Duration of the pulse animation")]
     public float pulseDuration = 0.15f;
+    [Tooltip("Beats to wait after the beat before the pulse starts, so parts can land slightly after the body")]
+    public float pulseDelayBeats = 0f;
 
     [Header("Filtering")]
     [Tooltip("Only pulse every N beats (1 = every beat, 2 = every other beat)")]
@@ -152,6 +154,7 @@ public class BeatPulseReceiver : MonoBehaviour
     private IEnumerator Pulse(float intensity)
     {
         isPulsing = true;
+        if (pulseDelayBeats > 0f) yield return new WaitForSeconds(pulseDelayBeats * CupConductor.SecPerBeat);
 
         // Calculate scale based on intensity
         float scaleMultiplier = baseScale + (intensityBonusScale * intensity);

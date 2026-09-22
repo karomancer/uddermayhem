@@ -20,13 +20,13 @@ public static class TipJarRig
     // Sprite-rect pixels, origin bottom-left. The glass leans about 8 degrees, so the chain follows the body's axis.
     // The base sits where the jar meets the bottom of the screen (the art continues below it), so a squash
     // compresses the visible jar toward the screen edge instead of toward the hidden foot.
-    static readonly Vector2 BasePosition = new Vector2(1048f, 673f);
+    static readonly Vector2 BasePosition = new Vector2(1042f, 718f);
     const float AxisDegrees = 98f;
-    const float BaseLength = 260f;
+    const float BaseLength = 215f;
     const float BellyLength = 190f;
     const float RimLength = 700f;
-    const float BellyPeak = 260f;   // distance along the axis where the belly bone has full influence (the label)
-    const float RimPeak = 455f;     // from here up the rim bone owns the vertices, so the rim rings stay rigid
+    const float BellyPeak = 215f;   // distance along the axis where the belly bone has full influence (the label)
+    const float RimPeak = 410f;     // from here up the rim bone owns the vertices, so the rim rings stay rigid
     const int GridColumns = 16;
     const int GridRows = 14;
 

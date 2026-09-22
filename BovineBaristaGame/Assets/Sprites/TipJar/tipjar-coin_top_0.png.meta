@@ -139,10 +139,10 @@ TextureImporter:
     physicsShape: []
     bones:
     - name: coins
-      guid: ceb71fd06f59647a2b5c5ebfe4f63d1c
-      position: {x: 1048, y: 673, z: 0}
+      guid: c01c4869e04234d12a14d74a1f3f1882
+      position: {x: 1042, y: 718, z: 0}
       rotation: {x: 0, y: 0, z: 0.75470954, w: 0.656059}
-      length: 1150
+      length: 1105
       parentId: -1
       color:
         serializedVersion: 2
