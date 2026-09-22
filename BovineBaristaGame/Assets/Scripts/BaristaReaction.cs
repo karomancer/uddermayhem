@@ -2,21 +2,21 @@ using UnityEngine;
 
 /// <summary>
 /// The barista's reaction bubble in the top-left corner. When the running score locks in a grade band
-/// (OK at goodThreshold, Superb at superbThreshold of the chart's ceiling) it plays three frames over one
-/// measure: frame 0 for a beat, frame 1 for half a beat, frame 2 for two and a half, then gone.
+/// (Good at goodThreshold, Superb at superbThreshold of the chart's ceiling) it plays three frames over one
+/// measure: frame 0 for a beat, frame 1 for a quarter beat, frame 2 for two and three quarters, then gone.
 /// Pinned to the camera's top-left corner in world units so it sits the same at any aspect ratio.
 /// </summary>
 public class BaristaReaction : MonoBehaviour
 {
     [Header("Frames: 0 standing, 1 transition, 2 thumbs up")]
-    public Sprite[] okFrames;
+    public Sprite[] goodFrames;
     public Sprite[] superbFrames;
 
     [Header("Timing (beats from the first frame)")]
     public float secondFrameBeat = 1f;
-    public float thirdFrameBeat = 1.5f;
+    public float thirdFrameBeat = 1.25f;
     [Tooltip("How long the last frame stays up")]
-    public float holdBeats = 2.5f;
+    public float holdBeats = 2.75f;
 
     [Header("Placement")]
     [Tooltip("Bubble centre from the camera's top-left corner, in world units (+x right, -y down)")]
@@ -31,6 +31,7 @@ public class BaristaReaction : MonoBehaviour
     public int sortingOrder = 20;
 
     public int CurrentFrame => playing == null ? -1 : frameIndex;
+    public string CurrentReaction => playing == null ? "" : playing == superbFrames ? "superb" : "good";
 
     private SpriteRenderer spriteRenderer;
     private GameManager gameManager;
@@ -38,7 +39,7 @@ public class BaristaReaction : MonoBehaviour
     private Sprite[] playing;
     private float startBeat;
     private int frameIndex = -1;
-    private bool okShown;
+    private bool goodShown;
     private bool superbShown;
 
     void Awake()
@@ -53,7 +54,7 @@ public class BaristaReaction : MonoBehaviour
     {
         Camera camera = Camera.main;
         if (camera == null) return;
-        Sprite reference = okFrames != null && okFrames.Length > 0 ? okFrames[0] : null;
+        Sprite reference = goodFrames != null && goodFrames.Length > 0 ? goodFrames[0] : null;
         if (reference != null)
         {
             float scale = bubbleWorldWidth / (bubblePixels / reference.pixelsPerUnit);
@@ -73,7 +74,7 @@ public class BaristaReaction : MonoBehaviour
         {
             int score = gameManager.CurrentScore;
             if (!superbShown && Usable(superbFrames) && score >= gameManager.superbThreshold * maxScore) Begin(superbFrames, beat);
-            else if (!okShown && Usable(okFrames) && score >= gameManager.goodThreshold * maxScore) Begin(okFrames, beat);
+            else if (!goodShown && Usable(goodFrames) && score >= gameManager.goodThreshold * maxScore) Begin(goodFrames, beat);
         }
         if (playing == null) return;
 
@@ -85,14 +86,14 @@ public class BaristaReaction : MonoBehaviour
 
     private static bool Usable(Sprite[] frames) => frames != null && frames.Length >= 3 && frames[0] != null && frames[1] != null && frames[2] != null;
 
-    // Superb also retires the OK reaction, so a fast run doesn't play two bubbles back to back
+    // Superb also retires the Good reaction, so a fast run doesn't play two bubbles back to back
     private void Begin(Sprite[] frames, float beat)
     {
         playing = frames;
         startBeat = Mathf.Ceil(beat);
-        okShown = true;
+        goodShown = true;
         if (frames == superbFrames) superbShown = true;
-        Debug.Log($"[Reaction] {(frames == superbFrames ? "superb" : "ok")} locked in at beat {beat:F2}, first frame on beat {startBeat}");
+        Debug.Log($"[Reaction] {(frames == superbFrames ? "superb" : "good")} locked in at beat {beat:F2}, first frame on beat {startBeat}");
     }
 
     private void Show(int index)

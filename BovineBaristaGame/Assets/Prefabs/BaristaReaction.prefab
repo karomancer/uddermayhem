@@ -43,14 +43,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c1f0a2e5b9d4e3fa8c6d1b2e4f50a93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  okFrames:
+  goodFrames:
   - {fileID: 21300000, guid: c9ca2364ec0b4fda92c51ecef28497a9, type: 3}
   - {fileID: 21300000, guid: b3de1e54a4114a479b249e576e2d21b3, type: 3}
   - {fileID: 21300000, guid: cd3687ac2db449a3ad3e164190fc1a97, type: 3}
-  superbFrames: []
+  superbFrames:
+  - {fileID: 21300000, guid: f6899e3d6fcf47f09d48abc7f4f9fa89, type: 3}
+  - {fileID: 21300000, guid: ab72f960f28240c5b53f0de3fb5ce364, type: 3}
+  - {fileID: 21300000, guid: 5552ed1798a44f91b8bc302c1e5381e6, type: 3}
   secondFrameBeat: 1
-  thirdFrameBeat: 1.5
-  holdBeats: 2.5
+  thirdFrameBeat: 1.25
+  holdBeats: 2.75
   cornerOffset: {x: 2.5, y: -2.5}
   bubbleWorldWidth: 4.1
   bubblePixels: 1272
