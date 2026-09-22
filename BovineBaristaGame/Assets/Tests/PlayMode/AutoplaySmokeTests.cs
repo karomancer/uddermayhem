@@ -78,7 +78,7 @@ public class AutoplaySmokeTests
         var shotExit = new HashSet<Note>();
         bool emptySqueezeShot = false;
         bool hudShot = false;
-        var reactionFramesShot = new HashSet<int>();
+        var reactionFramesShot = new HashSet<string>();
         bool danceOnBeatShot = false, danceMidBeatShot = false, dance2xShot = false;
         var capturedBySize = new Dictionary<float, List<Note>>();
         bool entranceShot = false;
@@ -101,10 +101,11 @@ public class AutoplaySmokeTests
                 {
                     var reactionComponent = reaction.GetComponent("BaristaReaction");
                     int frame = (int)reactionComponent.GetType().GetProperty("CurrentFrame").GetValue(reactionComponent);
-                    if (frame >= 0 && reactionFramesShot.Add(frame))
+                    string reactionName = (string)reactionComponent.GetType().GetProperty("CurrentReaction").GetValue(reactionComponent);
+                    if (frame >= 0 && reactionFramesShot.Add($"{reactionName}{frame}"))
                     {
-                        Debug.Log($"[Reaction] frame {frame} visible at beat {beat:F2}");
-                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"reaction_f{frame}.png"));
+                        Debug.Log($"[Reaction] {reactionName} frame {frame} visible at beat {beat:F2}");
+                        yield return Capture(System.IO.Path.Combine(screenshotDir, $"reaction_{reactionName}_f{frame}.png"));
                     }
                 }
                 int multiplier = (int)GameManagerType.GetProperty("CurrentMultiplier").GetValue(gameManager);
