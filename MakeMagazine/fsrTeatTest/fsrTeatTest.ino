@@ -3,6 +3,8 @@ const int FSR_GREEN_PIN = A1;
 const int FSR_YELLOW_PIN = A2;
 const int FSR_ORANGE_PIN = A3;
 
+const int THRESHOLD = 900;
+
 void setup() {
   pinMode(FSR_WHITE_PIN, INPUT);
   pinMode(FSR_GREEN_PIN, INPUT);
@@ -27,9 +29,9 @@ void loop() {
   Serial.print("Orange: ");
   Serial.println(orangeValue);
 
-  // Step 2: Adjust this numeric value depending on what values you see
-  // if (value < 75) {
-  //   Serial.println("PRESSED!");
+  // Step 2: Adjust THRESHOLD depending on what values you see
+  // if (whiteValue > THRESHOLD) {
+  //   Serial.println("White PRESSED!");
   // }
 
   delay(100);
