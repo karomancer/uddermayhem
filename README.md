@@ -2,7 +2,7 @@
 
 A rhythm game you play by milking a cow. Squeeze the silicone udder in time with the music to fill coffee cups for the customers of a cow-run café.
 
-Udder Mayhem started as the midterm for *The New Arcade* at NYU ITP in spring 2023, went on to the ITP Showcase and the Coney Island Maker Faire, and was written up in Make Magazine. The full story, with photos and videos, is on my portfolio: https://kachow.llc/portfolio/uddermayhem
+Udder Mayhem started as the midterm for *The New Arcade* at NYU ITP in spring 2023, went on to the ITP Showcase and the Coney Island Maker Faire, and was written up in Make Magazine. The full story, with photos and videos, is on my portfolio: https://www.karinachowtime.com/portfolio/uddermayhem
 
 ## What's in this repo
 
@@ -28,7 +28,7 @@ Squeeze when a cup arrives under a teat and let go when it's full.
 
 ## The current game
 
-The version people play at events today is a much bigger arcade build that runs on a Raspberry Pi inside the cabinet, made together with [Kevin Mitchell](https://github.com/kmitch). Its source isn't in this repo. The Unity project here is the 2023 class project, kept as the record of how it was built.
+The version people play at events today is a much bigger arcade build that runs on a Raspberry Pi inside the cabinet, made together with Kevin Mitchell. Its source isn't in this repo. The Unity project here is the 2023 class project, kept as the record of how it was built.
 
 ## Building the controller
 
