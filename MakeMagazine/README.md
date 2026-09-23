@@ -4,16 +4,18 @@ Files for the Make Magazine article on building the silicone udder controller. T
 
 ## Files
 
-| File | What it is | Print or cut |
-|---|---|---|
-| `udder_moldbox_1pc.stl` | One-piece mold box for casting the silicone. Needs a print bed of at least 166 × 209 × 146 mm. | 1 |
-| `udder_moldbox_4pc_q1q3.stl` | Quadrant of the four-part mold box, used for quadrants 1 and 3. About 104 × 104 × 150 mm. | 2 |
-| `udder_moldbox_4pc_q2q4.stl` | Quadrant of the four-part mold box, used for quadrants 2 and 4. | 2 |
-| `udder_inset.stl` | Insert that sits in the mold box and forms the inside of the udder. | 1 |
-| `udder_inset_pole.stl` | Pole that forms the hollow inside each teat. | 4 |
-| `udder_topbrace.stl` | Optional brace that holds in the expanding foam and helps when mounting the udder. | 1 |
-| `udder_baseboard_cutout.dxf` | Cutting template for the board the udder mounts to. Units are millimeters. | 1 |
-| `fsrTeatTest/fsrTeatTest.ino` | Sketch for testing the four FSRs before and after casting the foam. | — |
+Click a picture or file name to open it on GitHub, where you can spin the model around and download it.
+
+| Preview | File | What it is | Print or cut |
+|---|---|---|---|
+| <a href="udder_moldbox_1pc.stl"><img src="images/udder_moldbox_1pc.png" width="160" alt="One-piece mold box"></a> | [`udder_moldbox_1pc.stl`](udder_moldbox_1pc.stl) | One-piece mold box for casting the silicone. Needs a print bed of at least 166 × 209 × 146 mm. | 1 |
+| <a href="udder_moldbox_4pc_q1q3.stl"><img src="images/udder_moldbox_4pc_q1q3.png" width="160" alt="Four-part mold box, quadrants 1 and 3"></a> | [`udder_moldbox_4pc_q1q3.stl`](udder_moldbox_4pc_q1q3.stl) | Quadrant of the four-part mold box, used for quadrants 1 and 3. About 104 × 104 × 150 mm. | 2 |
+| <a href="udder_moldbox_4pc_q2q4.stl"><img src="images/udder_moldbox_4pc_q2q4.png" width="160" alt="Four-part mold box, quadrants 2 and 4"></a> | [`udder_moldbox_4pc_q2q4.stl`](udder_moldbox_4pc_q2q4.stl) | Quadrant of the four-part mold box, used for quadrants 2 and 4. | 2 |
+| <a href="udder_inset.stl"><img src="images/udder_inset.png" width="160" alt="Mold insert"></a> | [`udder_inset.stl`](udder_inset.stl) | Insert that sits in the mold box and forms the inside of the udder. | 1 |
+| <a href="udder_inset_pole.stl"><img src="images/udder_inset_pole.png" width="160" alt="Teat pole"></a> | [`udder_inset_pole.stl`](udder_inset_pole.stl) | Pole that forms the hollow inside each teat. | 4 |
+| <a href="udder_topbrace.stl"><img src="images/udder_topbrace.png" width="160" alt="Top brace"></a> | [`udder_topbrace.stl`](udder_topbrace.stl) | Optional brace that holds in the expanding foam and helps when mounting the udder. | 1 |
+| <a href="udder_baseboard_cutout.dxf"><img src="images/udder_baseboard_cutout.svg" width="160" alt="Baseboard cutout template"></a> | [`udder_baseboard_cutout.dxf`](udder_baseboard_cutout.dxf) | Cutting template for the board the udder mounts to. Units are millimeters. | 1 |
+| | [`fsrTeatTest/fsrTeatTest.ino`](fsrTeatTest/fsrTeatTest.ino) | Sketch for testing the four FSRs before and after casting the foam. | — |
 
 Print the four-part mold even if you cast the silicone in the one-piece mold. The foam is cast in the four-part mold, since the finished udder can't come back out of the one-piece one.
 
@@ -41,7 +43,9 @@ Readings go up as you squeeze. Uncomment the check at the bottom of `loop()` and
 
 ## Using it as a game controller
 
-Once the readings look right, flash [`teensy/fsr_udder/fsr_udder.ino`](../teensy/fsr_udder/fsr_udder.ino). It turns each teat into a keyboard key, so the udder works with anything that takes keyboard input, including [Udder Mayhem](https://karomancer.github.io/uddermayhem/).
+Once the readings look right, flash [`teensy/fsr_udder/fsr_udder.ino`](../teensy/fsr_udder/fsr_udder.ino). It turns each teat into a keyboard key, so the udder works with anything that takes keyboard input.
+
+**Try it out by playing Udder Mayhem in your browser: https://karomancer.github.io/uddermayhem/**
 
 In the Arduino IDE with Teensyduino, set **Tools → USB Type** to **Keyboard** (or any option that includes Keyboard) before uploading. The sketch won't compile without it.
 
