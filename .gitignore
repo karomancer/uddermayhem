@@ -10,6 +10,7 @@
 /BovineBaristaGame/[Bb]uilds/
 /BovineBaristaGame/[Ll]ogs/
 /BovineBaristaGame/[Mm]emoryCaptures/
+/BovineBaristaGame/[Uu]ser[Ss]ettings/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 /BovineBaristaGame/!/[Aa]ssets/**/*.meta
