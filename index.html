@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>UdderMayhem</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; background: #000; width: 100vw; height: 100vh; }
+      #unity-container {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100vw; height: 100vh;
+      }
+      #unity-canvas { width: 100vw; height: 100vh; display: block; background: #000; }
+      #unity-footer { display: none; }
+      #unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; font-family: sans-serif; font-size: 20px; }
+      #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none; font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">Loading Udder Mayhem&hellip;</div>
+      <div id="unity-warning"></div>
+      <div id="unity-footer"></div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px; color: white;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var config = {
+        dataUrl: buildUrl + "/uddermayhem.data",
+        frameworkUrl: buildUrl + "/uddermayhem.framework.js",
+        codeUrl: buildUrl + "/uddermayhem.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Kachow",
+        productName: "UdderMayhem",
+        productVersion: "1.03",
+        showBanner: unityShowBanner,
+      };
+
+      var script = document.createElement("script");
+      script.src = buildUrl + "/uddermayhem.loader.js";
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-loading-bar").textContent = "Loading Udder Mayhem… " + Math.round(progress * 100) + "%";
+        }).then(() => {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
