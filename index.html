@@ -6,12 +6,15 @@
     <title>UdderMayhem</title>
     <style>
       html, body { margin: 0; padding: 0; overflow: hidden; background: #000; width: 100vw; height: 100vh; }
+      /* Letterbox to the aspect the art was drawn for; black bars on wider or taller screens */
       #unity-container {
         position: absolute;
-        left: 0; top: 0;
-        width: 100vw; height: 100vh;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-      #unity-canvas { width: 100vw; height: 100vh; display: block; background: #000; }
+      #unity-canvas { width: min(100vw, calc(100vh * 16 / 9)); height: min(100vh, calc(100vw * 9 / 16)); display: block; background: #000; }
       #unity-footer { display: none; }
       #unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; font-family: sans-serif; font-size: 20px; }
       #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none; font-family: sans-serif; }
