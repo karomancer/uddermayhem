@@ -9,8 +9,10 @@ Click a picture or file name to open it on GitHub, where you can spin the model 
 | Preview | File | What it is | Print or cut |
 |---|---|---|---|
 | <a href="udder_moldbox_1pc.stl"><img src="images/udder_moldbox_1pc.png" width="160" alt="One-piece mold box"></a> | [`udder_moldbox_1pc.stl`](udder_moldbox_1pc.stl) | One-piece mold box for casting the silicone. Needs a print bed of at least 166 × 209 × 146 mm. | 1 |
-| <a href="udder_moldbox_4pc_q1q3.stl"><img src="images/udder_moldbox_4pc_q1q3.png" width="160" alt="Four-part mold box, quadrants 1 and 3"></a> | [`udder_moldbox_4pc_q1q3.stl`](udder_moldbox_4pc_q1q3.stl) | Quadrant of the four-part mold box, used for quadrants 1 and 3. About 104 × 104 × 150 mm. | 2 |
-| <a href="udder_moldbox_4pc_q2q4.stl"><img src="images/udder_moldbox_4pc_q2q4.png" width="160" alt="Four-part mold box, quadrants 2 and 4"></a> | [`udder_moldbox_4pc_q2q4.stl`](udder_moldbox_4pc_q2q4.stl) | Quadrant of the four-part mold box, used for quadrants 2 and 4. | 2 |
+| <a href="udder_moldbox_4pc_tl_pegs.stl"><img src="images/udder_moldbox_4pc_tl_pegs.png" width="160" alt="Four-part mold box, top-left quadrant with pegs"></a> | [`udder_moldbox_4pc_tl_pegs.stl`](udder_moldbox_4pc_tl_pegs.stl) | Top-left quadrant of the four-part mold box, with pegs. About 83 × 104 × 146 mm. | 1 |
+| <a href="udder_moldbox_4pc_tr_sockets.stl"><img src="images/udder_moldbox_4pc_tr_sockets.png" width="160" alt="Four-part mold box, top-right quadrant with sockets"></a> | [`udder_moldbox_4pc_tr_sockets.stl`](udder_moldbox_4pc_tr_sockets.stl) | Top-right quadrant, with sockets. | 1 |
+| <a href="udder_moldbox_4pc_bl_sockets.stl"><img src="images/udder_moldbox_4pc_bl_sockets.png" width="160" alt="Four-part mold box, bottom-left quadrant with sockets"></a> | [`udder_moldbox_4pc_bl_sockets.stl`](udder_moldbox_4pc_bl_sockets.stl) | Bottom-left quadrant, with sockets. | 1 |
+| <a href="udder_moldbox_4pc_br_pegs.stl"><img src="images/udder_moldbox_4pc_br_pegs.png" width="160" alt="Four-part mold box, bottom-right quadrant with pegs"></a> | [`udder_moldbox_4pc_br_pegs.stl`](udder_moldbox_4pc_br_pegs.stl) | Bottom-right quadrant, with pegs. | 1 |
 | <a href="udder_inset.stl"><img src="images/udder_inset.png" width="160" alt="Mold insert"></a> | [`udder_inset.stl`](udder_inset.stl) | Insert that sits in the mold box and forms the inside of the udder. | 1 |
 | <a href="udder_inset_pole.stl"><img src="images/udder_inset_pole.png" width="160" alt="Teat pole"></a> | [`udder_inset_pole.stl`](udder_inset_pole.stl) | Pole that forms the hollow inside each teat. | 4 |
 | <a href="udder_topbrace.stl"><img src="images/udder_topbrace.png" width="160" alt="Top brace"></a> | [`udder_topbrace.stl`](udder_topbrace.stl) | Optional brace that holds in the expanding foam and helps when mounting the udder. | 1 |
@@ -18,6 +20,8 @@ Click a picture or file name to open it on GitHub, where you can spin the model 
 | | [`fsrTeatTest/fsrTeatTest.ino`](fsrTeatTest/fsrTeatTest.ino) | Sketch for testing the four FSRs before and after casting the foam. | — |
 
 Print the four-part mold even if you cast the silicone in the one-piece mold. The foam is cast in the four-part mold, since the finished udder can't come back out of the one-piece one.
+
+The four-part mold is the one-piece mold cut along its center lines, so each quadrant holds one whole teat. The top-left and bottom-right quadrants have three 10 mm square pegs on each cut face, and the other two have matching sockets with 0.2 mm of clearance per side. Each quadrant is different, so print one of each and match pegs to sockets when you assemble it.
 
 ## Printing
 
