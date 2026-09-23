@@ -15,6 +15,8 @@ Udder Mayhem started as the midterm for *The New Arcade* at NYU ITP in spring 20
 
 ## Playing it
 
+**Play the current arcade build in your browser: https://karomancer.github.io/uddermayhem/**
+
 The controller presses plain keyboard keys, so anything that runs the game works with either the udder or a keyboard:
 
 | Teat | Key |
@@ -28,7 +30,7 @@ Squeeze when a cup arrives under a teat and let go when it's full.
 
 ## The current game
 
-The version people play at events today is a much bigger arcade build that runs on a Raspberry Pi inside the cabinet, made together with Kevin Mitchell. Its source isn't in this repo. The Unity project here is the 2023 class project, kept as the record of how it was built.
+The version people play at events today is a much bigger arcade build that runs on a Raspberry Pi inside the cabinet, made together with Kevin Mitchell. That's the build linked above, served from this repo's `gh-pages` branch. Its source isn't in this repo. The Unity project here is the 2023 class project, kept as the record of how it was built.
 
 ## Building the controller
 
